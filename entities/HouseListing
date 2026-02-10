@@ -1,0 +1,95 @@
+{
+  "name": "HouseListing",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "property_type": {
+      "type": "string",
+      "enum": [
+        "villa",
+        "apartment",
+        "house",
+        "studio",
+        "penthouse"
+      ],
+      "default": "apartment"
+    },
+    "listing_type": {
+      "type": "string",
+      "enum": [
+        "sell",
+        "rent"
+      ],
+      "default": "sell"
+    },
+    "price": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD"
+    },
+    "city": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "rooms": {
+      "type": "number"
+    },
+    "bathrooms": {
+      "type": "number"
+    },
+    "area_sqm": {
+      "type": "number"
+    },
+    "floor": {
+      "type": "number"
+    },
+    "has_parking": {
+      "type": "boolean",
+      "default": false
+    },
+    "has_garden": {
+      "type": "boolean",
+      "default": false
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "contact_phone": {
+      "type": "string"
+    },
+    "contact_email": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "is_featured": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "title",
+    "property_type",
+    "price",
+    "city"
+  ]
+}

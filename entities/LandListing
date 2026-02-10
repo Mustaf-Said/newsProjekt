@@ -1,0 +1,77 @@
+{
+  "name": "LandListing",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "listing_type": {
+      "type": "string",
+      "enum": [
+        "sell",
+        "rent"
+      ],
+      "default": "sell"
+    },
+    "price": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD"
+    },
+    "city": {
+      "type": "string"
+    },
+    "location_details": {
+      "type": "string"
+    },
+    "area_sqm": {
+      "type": "number"
+    },
+    "land_type": {
+      "type": "string",
+      "enum": [
+        "residential",
+        "commercial",
+        "agricultural",
+        "industrial"
+      ],
+      "default": "residential"
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "contact_phone": {
+      "type": "string"
+    },
+    "contact_email": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "is_featured": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "title",
+    "price",
+    "city",
+    "area_sqm"
+  ]
+}

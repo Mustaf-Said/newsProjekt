@@ -1,0 +1,61 @@
+{
+  "name": "LocalNews",
+  "type": "object",
+  "properties": {
+    "headline": {
+      "type": "string",
+      "description": "News headline"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Short summary of the article"
+    },
+    "content": {
+      "type": "string",
+      "description": "Full article content in HTML"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Main image URL"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "politics",
+        "economy",
+        "society",
+        "culture",
+        "sports",
+        "technology",
+        "other"
+      ],
+      "default": "other"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "published",
+        "scheduled"
+      ],
+      "default": "draft"
+    },
+    "publish_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When to publish"
+    },
+    "is_featured": {
+      "type": "boolean",
+      "default": false
+    },
+    "views": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "headline",
+    "content"
+  ]
+}

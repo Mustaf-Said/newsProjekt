@@ -1,0 +1,25 @@
+{
+  "name": "Favorite",
+  "type": "object",
+  "properties": {
+    "listing_type": {
+      "type": "string",
+      "enum": [
+        "car",
+        "house",
+        "land"
+      ]
+    },
+    "listing_id": {
+      "type": "string"
+    },
+    "user_email": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "listing_type",
+    "listing_id",
+    "user_email"
+  ]
+}

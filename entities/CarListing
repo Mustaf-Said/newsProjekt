@@ -1,0 +1,97 @@
+{
+  "name": "CarListing",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "brand": {
+      "type": "string"
+    },
+    "model": {
+      "type": "string"
+    },
+    "year": {
+      "type": "number"
+    },
+    "price": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD"
+    },
+    "listing_type": {
+      "type": "string",
+      "enum": [
+        "sell",
+        "rent"
+      ],
+      "default": "sell"
+    },
+    "condition": {
+      "type": "string",
+      "enum": [
+        "new",
+        "used"
+      ],
+      "default": "used"
+    },
+    "city": {
+      "type": "string"
+    },
+    "mileage": {
+      "type": "number"
+    },
+    "fuel_type": {
+      "type": "string",
+      "enum": [
+        "petrol",
+        "diesel",
+        "electric",
+        "hybrid"
+      ]
+    },
+    "transmission": {
+      "type": "string",
+      "enum": [
+        "automatic",
+        "manual"
+      ]
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "contact_phone": {
+      "type": "string"
+    },
+    "contact_email": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "is_featured": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "title",
+    "brand",
+    "price",
+    "city"
+  ]
+}
