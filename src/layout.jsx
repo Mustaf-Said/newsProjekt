@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "./utils";
 import { base44 } from "@/api/base44Client";
@@ -106,7 +106,7 @@ export default function Layout({ children, currentPageName }) {
                   <Newspaper className="w-5 h-5 text-white" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-lg font-black tracking-tight leading-none">PULSE</span>
+                  <span className="text-lg font-black tracking-tight leading-none">RAYGAL</span>
                   <span className="text-[10px] font-medium text-[var(--text-secondary)] tracking-widest uppercase">News & Market</span>
                 </div>
               </Link>
@@ -136,8 +136,8 @@ export default function Layout({ children, currentPageName }) {
                       key={item.page}
                       to={createPageUrl(item.page)}
                       className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-all ${isActive(item.page)
-                          ? "text-amber-600 bg-amber-50 dark:bg-amber-500/10"
-                          : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]"
+                        ? "text-amber-600 bg-amber-50 dark:bg-amber-500/10"
+                        : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]"
                         }`}
                     >
                       <item.icon className="w-4 h-4" />
@@ -255,7 +255,7 @@ export default function Layout({ children, currentPageName }) {
                   <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-amber-600 rounded-lg flex items-center justify-center">
                     <Newspaper className="w-4 h-4 text-white" />
                   </div>
-                  <span className="text-white text-lg font-black">PULSE</span>
+                  <span className="text-white text-lg font-black">RAYGAL</span>
                 </div>
                 <p className="text-sm leading-relaxed">Your trusted source for breaking news, live sports, and the best marketplace deals.</p>
               </div>
@@ -286,7 +286,7 @@ export default function Layout({ children, currentPageName }) {
               </div>
             </div>
             <div className="border-t border-white/10 mt-10 pt-6 text-center text-xs">
-              © {new Date().getFullYear()} PULSE News & Market. All rights reserved.
+              © {new Date().getFullYear()} RAYGAL News & Market. All rights reserved.
             </div>
           </div>
         </footer>
