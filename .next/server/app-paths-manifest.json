@@ -1,0 +1,6 @@
+{
+  "/api/weather/route": "app/api/weather/route.js",
+  "/api/live-scores/route": "app/api/live-scores/route.js",
+  "/(site)/page": "app/(site)/page.js",
+  "/(site)/Home/page": "app/(site)/Home/page.js"
+}
