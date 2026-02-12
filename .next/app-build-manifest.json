@@ -16,10 +16,10 @@
       "static/chunks/main-app.js",
       "static/chunks/app/(site)/layout.js"
     ],
-    "/(site)/Home/page": [
+    "/(site)/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(site)/Home/page.js"
+      "static/chunks/app/(site)/page.js"
     ],
     "/api/live-scores/route": [
       "static/chunks/webpack.js",
@@ -30,11 +30,6 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/api/weather/route.js"
-    ],
-    "/(site)/LiveScores/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(site)/LiveScores/page.js"
     ],
     "/(site)/WorldNews/page": [
       "static/chunks/webpack.js",
@@ -56,20 +51,15 @@
       "static/chunks/main-app.js",
       "static/chunks/app/api/football-news/route.js"
     ],
-    "/(site)/MarketplaceCars/page": [
+    "/(site)/MarketplaceHouses/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(site)/MarketplaceCars/page.js"
+      "static/chunks/app/(site)/MarketplaceHouses/page.js"
     ],
-    "/(site)/LocalNews/page": [
+    "/(site)/Home/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(site)/LocalNews/page.js"
-    ],
-    "/_not-found/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/_not-found/page.js"
+      "static/chunks/app/(site)/Home/page.js"
     ]
   }
 }
