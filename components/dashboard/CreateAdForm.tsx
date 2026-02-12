@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/api/supabaseClient";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -19,8 +20,30 @@ export default function CreateAdForm({ onSuccess }: CreateAdFormProps) {
   const [images, setImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   const set = (key: string, val: any) => setData((prev) => ({ ...prev, [key]: val }));
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadUser = async () => {
+      const { data, error } = await supabase.auth.getUser();
+      if (!isMounted) return;
+      if (error) {
+        setUserId(null);
+        return;
+      }
+      setUserId(data.user?.id || null);
+    };
+    loadUser();
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUserId(session?.user?.id || null);
+    });
+    return () => {
+      isMounted = false;
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -56,9 +79,71 @@ export default function CreateAdForm({ onSuccess }: CreateAdFormProps) {
   };
 
   const handleSubmit = async () => {
+    if (!userId) {
+      toast.error("Please sign in to create an ad.");
+      return;
+    }
     setSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 400));
-    toast.success("Ad saved locally. Server sync is disabled.");
+    const baseDetails = {
+      city: data.city || null,
+      price: Number(data.price) || 0,
+      listing_type: data.listing_type || "sell",
+      contact_phone: data.contact_phone || null,
+      contact_email: data.contact_email || null,
+      images: images.filter((url) => !url.startsWith("blob:"))
+    };
+
+    let details: Record<string, any> = { ...baseDetails };
+    if (type === "car") {
+      details = {
+        ...details,
+        brand: data.brand || null,
+        model: data.model || null,
+        year: Number(data.year) || null,
+        mileage: Number(data.mileage) || null,
+        condition: data.condition || "used",
+        fuel_type: data.fuel_type || null,
+        transmission: data.transmission || null
+      };
+    }
+    if (type === "house") {
+      details = {
+        ...details,
+        property_type: data.property_type || "apartment",
+        rooms: Number(data.rooms) || null,
+        bathrooms: Number(data.bathrooms) || null,
+        area_sqm: Number(data.area_sqm) || null,
+        address: data.address || null
+      };
+    }
+    if (type === "land") {
+      details = {
+        ...details,
+        land_type: data.land_type || "residential",
+        area_sqm: Number(data.area_sqm) || null,
+        location_details: data.location_details || null
+      };
+    }
+
+    const { error } = await supabase.from("announcements").insert({
+      user_id: userId,
+      title: data.title,
+      content: data.description || "",
+      type: "listing",
+      category: type,
+      listing_type: data.listing_type || "sell",
+      details,
+      status: "pending"
+    });
+
+    if (error) {
+      console.error(error);
+      toast.error("Failed to submit ad. Please try again.");
+      setSaving(false);
+      return;
+    }
+
+    toast.success("Ad submitted for approval!");
     setData({});
     setImages((prev) => {
       prev.forEach(revokeObjectUrl);

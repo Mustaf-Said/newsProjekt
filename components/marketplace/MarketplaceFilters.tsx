@@ -21,7 +21,7 @@ type MarketplaceFiltersProps = {
   filterConfig?: FilterConfig;
 };
 
-const DEFAULT_LISTING_TYPES = ["sale", "rent"];
+const DEFAULT_LISTING_TYPES = ["sell", "rent"];
 
 export default function MarketplaceFilters({ filters, setFilters, filterConfig }: MarketplaceFiltersProps) {
   const cities = filterConfig?.cities || [];

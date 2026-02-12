@@ -5,17 +5,21 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createPageUrl } from "@/utils";
+import { supabase } from "@/api/supabaseClient";
 import {
   Home, Newspaper, Trophy, ShoppingBag,
-  Menu, X, ChevronDown, Sun, Moon,
+  User, LogOut, Menu, X, ChevronDown, Sun, Moon,
+  LayoutDashboard, Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
-  DropdownMenuTrigger,
+  DropdownMenuTrigger, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 
 export default function SiteLayout({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -24,9 +28,47 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
   const pathSegment = pathname === "/" ? "Home" : pathname.replace(/^\//, "").split("/")[0];
 
   useEffect(() => {
+    let isMounted = true;
+    const loadProfile = async (currentUser: any) => {
+      if (!currentUser) {
+        setProfile(null);
+        return;
+      }
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, full_name, username, role")
+        .eq("id", currentUser.id)
+        .single();
+      if (isMounted) {
+        setProfile(data || null);
+      }
+    };
+
+    const loadUser = async () => {
+      const { data, error } = await supabase.auth.getUser();
+      if (!isMounted) return;
+      if (error) {
+        setUser(null);
+        setProfile(null);
+        return;
+      }
+      setUser(data.user || null);
+      await loadProfile(data.user);
+    };
+
+    loadUser();
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null);
+      loadProfile(session?.user || null);
+    });
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener("scroll", handleScroll);
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -87,7 +129,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
               <button onClick={() => setDarkMode(!darkMode)} className="hover:text-[var(--accent)] transition-colors">
                 {darkMode ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
               </button>
-              <span>Welcome, Guest</span>
+              <span>Welcome, {profile?.full_name || profile?.username || user?.email || "Guest"}</span>
             </div>
           </div>
         </div>
@@ -141,6 +183,42 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
               </nav>
 
               <div className="flex items-center gap-2">
+                {user && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="relative">
+                        <User className="w-4.5 h-4.5" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                      <div className="px-3 py-2">
+                        <p className="text-sm font-semibold">{profile?.full_name || profile?.username || "User"}</p>
+                        <p className="text-xs text-muted-foreground">{user.email}</p>
+                      </div>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link href={createPageUrl("Dashboard")} className="cursor-pointer">
+                          <LayoutDashboard className="w-4 h-4 mr-2" /> Dashboard
+                        </Link>
+                      </DropdownMenuItem>
+                      {profile?.role === "admin" && (
+                        <DropdownMenuItem asChild>
+                          <Link href={createPageUrl("AdminPanel")} className="cursor-pointer">
+                            <Shield className="w-4 h-4 mr-2" /> Admin Panel
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => supabase.auth.signOut()}
+                        className="text-red-600 cursor-pointer"
+                      >
+                        <LogOut className="w-4 h-4 mr-2" /> Sign Out
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+
                 <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
                   {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
                 </Button>

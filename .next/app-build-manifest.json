@@ -60,6 +60,21 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/(site)/Home/page.js"
+    ],
+    "/(site)/Dashboard/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(site)/Dashboard/page.js"
+    ],
+    "/(site)/MarketplaceCars/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(site)/MarketplaceCars/page.js"
+    ],
+    "/(site)/ListingDetail/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(site)/ListingDetail/page.js"
     ]
   }
 }
