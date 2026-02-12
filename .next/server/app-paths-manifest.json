@@ -1,7 +1,4 @@
 {
-  "/(site)/FootballNews/page": "app/(site)/FootballNews/page.js",
-  "/(site)/Home/page": "app/(site)/Home/page.js",
-  "/(site)/MarketplaceHouses/page": "app/(site)/MarketplaceHouses/page.js",
   "/(site)/Dashboard/page": "app/(site)/Dashboard/page.js",
   "/(site)/ListingDetail/page": "app/(site)/ListingDetail/page.js",
   "/(site)/MarketplaceCars/page": "app/(site)/MarketplaceCars/page.js"

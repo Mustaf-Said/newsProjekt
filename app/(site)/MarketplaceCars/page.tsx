@@ -29,7 +29,7 @@ export default function MarketplaceCars() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("announcements")
-        .select("id, title, listing_type, details")
+        .select("id, title, listing_type, details, city, price")
         .eq("status", "approved")
         .eq("category", "car")
         .order("created_at", { ascending: false });
@@ -38,16 +38,30 @@ export default function MarketplaceCars() {
 
       return (data || []).map((row: any) => {
         const details = row.details || {};
+        const images = Array.isArray(details.images)
+          ? details.images
+          : details.image_url
+            ? [details.image_url]
+            : details.image
+              ? [details.image]
+              : [];
+        const price = details.price ?? row.price ?? 0;
+        const city = details.city ?? row.city ?? null;
+        const brand = details.brand ?? details.car_name ?? null;
+        const year = details.year ?? details.car_year ?? null;
+        const mileage = details.mileage ?? details.mileage_km ?? null;
+
         return {
           id: row.id,
           title: row.title,
           listing_type: row.listing_type || details.listing_type || "sell",
-          price: Number(details.price) || 0,
+          price: Number(price) || 0,
           currency: details.currency || "$",
-          city: details.city || null,
-          images: details.images || [],
-          brand: details.brand || null,
-          year: details.year || null,
+          city,
+          images,
+          brand,
+          year,
+          mileage,
           condition: details.condition || null,
           is_featured: details.is_featured || false
         } as Listing;
@@ -64,7 +78,7 @@ export default function MarketplaceCars() {
       cities,
       listingTypes: ["sell", "rent"],
       extraFilters: [
-        { key: "brand", label: "Brand", options: brands },
+        { key: "brand", label: "Car Name", options: brands },
         { key: "condition", label: "Condition", options: conditions }
       ]
     };

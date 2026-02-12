@@ -15,12 +15,14 @@ type CreateAdFormProps = {
 };
 
 export default function CreateAdForm({ onSuccess }: CreateAdFormProps) {
+  const storageBucket = process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || "public";
   const [type, setType] = useState("car");
   const [data, setData] = useState<Record<string, any>>({});
   const [images, setImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [imageUrlInput, setImageUrlInput] = useState("");
 
   const set = (key: string, val: any) => setData((prev) => ({ ...prev, [key]: val }));
 
@@ -50,11 +52,32 @@ export default function CreateAdForm({ onSuccess }: CreateAdFormProps) {
     if (files.length === 0) {
       return;
     }
+    if (!userId) {
+      toast.error("Please sign in to upload images.");
+      return;
+    }
     setUploading(true);
     try {
+      const uploadedUrls: string[] = [];
       for (const file of files) {
-        const fileUrl = URL.createObjectURL(file);
-        setImages((prev) => [...prev, fileUrl]);
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+        const path = `announcements/${userId}/${Date.now()}-${safeName}`;
+        const { error } = await supabase.storage.from(storageBucket).upload(path, file, {
+          cacheControl: "3600",
+          upsert: false
+        });
+        if (error) {
+          console.error(error);
+          toast.error(`Failed to upload ${file.name}. Check bucket: ${storageBucket}`);
+          continue;
+        }
+        const { data } = supabase.storage.from(storageBucket).getPublicUrl(path);
+        if (data?.publicUrl) {
+          uploadedUrls.push(data.publicUrl);
+        }
+      }
+      if (uploadedUrls.length > 0) {
+        setImages((prev) => [...prev, ...uploadedUrls]);
       }
     } finally {
       setUploading(false);
@@ -78,6 +101,13 @@ export default function CreateAdForm({ onSuccess }: CreateAdFormProps) {
     });
   };
 
+  const addImageUrl = () => {
+    const trimmed = imageUrlInput.trim();
+    if (!trimmed) return;
+    setImages((prev) => [...prev, trimmed]);
+    setImageUrlInput("");
+  };
+
   const handleSubmit = async () => {
     if (!userId) {
       toast.error("Please sign in to create an ad.");
@@ -98,9 +128,12 @@ export default function CreateAdForm({ onSuccess }: CreateAdFormProps) {
       details = {
         ...details,
         brand: data.brand || null,
+        car_name: data.brand || null,
         model: data.model || null,
         year: Number(data.year) || null,
+        car_year: Number(data.year) || null,
         mileage: Number(data.mileage) || null,
+        mileage_km: Number(data.mileage) || null,
         condition: data.condition || "used",
         fuel_type: data.fuel_type || null,
         transmission: data.transmission || null
@@ -132,6 +165,8 @@ export default function CreateAdForm({ onSuccess }: CreateAdFormProps) {
       type: "listing",
       category: type,
       listing_type: data.listing_type || "sell",
+      city: data.city || null,
+      price: Number(data.price) || 0,
       details,
       status: "pending"
     });
@@ -184,7 +219,7 @@ export default function CreateAdForm({ onSuccess }: CreateAdFormProps) {
 
         {type === "car" && (
           <>
-            <div><Label>Brand</Label><Input value={data.brand || ""} onChange={(e) => set("brand", e.target.value)} /></div>
+            <div><Label>Car name</Label><Input value={data.brand || ""} onChange={(e) => set("brand", e.target.value)} /></div>
             <div><Label>Model</Label><Input value={data.model || ""} onChange={(e) => set("model", e.target.value)} /></div>
             <div><Label>Year</Label><Input type="number" value={data.year || ""} onChange={(e) => set("year", e.target.value)} /></div>
             <div><Label>Mileage (km)</Label><Input type="number" value={data.mileage || ""} onChange={(e) => set("mileage", e.target.value)} /></div>
@@ -200,8 +235,10 @@ export default function CreateAdForm({ onSuccess }: CreateAdFormProps) {
               <Select value={data.fuel_type || ""} onValueChange={(v) => set("fuel_type", v)}>
                 <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="petrol">Petrol</SelectItem><SelectItem value="diesel">Diesel</SelectItem>
-                  <SelectItem value="electric">Electric</SelectItem><SelectItem value="hybrid">Hybrid</SelectItem>
+                  <SelectItem value="petrol">Petrol</SelectItem>
+                  <SelectItem value="diesel">Diesel</SelectItem>
+                  <SelectItem value="electric">Electric</SelectItem>
+                  <SelectItem value="hybrid">Hybrid</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -254,6 +291,19 @@ export default function CreateAdForm({ onSuccess }: CreateAdFormProps) {
 
       <div>
         <Label>Images</Label>
+        <div className="flex flex-col sm:flex-row gap-2 mt-2">
+          <Input
+            placeholder="Paste image URL"
+            value={imageUrlInput}
+            onChange={(e) => setImageUrlInput(e.target.value)}
+          />
+          <Button type="button" variant="outline" onClick={addImageUrl}>
+            Add URL
+          </Button>
+        </div>
+        <p className="text-xs text-[var(--text-secondary)] mt-1">
+          Uploaded files are stored in Supabase Storage. You can also paste image URLs.
+        </p>
         <div className="flex flex-wrap gap-3 mt-2">
           {images.map((img, i) => (
             <div key={i} className="relative w-24 h-24 rounded-xl overflow-hidden border border-[var(--border)]">

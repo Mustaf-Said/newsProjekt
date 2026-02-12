@@ -16,50 +16,10 @@
       "static/chunks/main-app.js",
       "static/chunks/app/(site)/layout.js"
     ],
-    "/(site)/page": [
+    "/(site)/ListingDetail/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(site)/page.js"
-    ],
-    "/api/live-scores/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/live-scores/route.js"
-    ],
-    "/api/weather/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/weather/route.js"
-    ],
-    "/(site)/WorldNews/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(site)/WorldNews/page.js"
-    ],
-    "/api/world-news/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/world-news/route.js"
-    ],
-    "/(site)/FootballNews/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(site)/FootballNews/page.js"
-    ],
-    "/api/football-news/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/football-news/route.js"
-    ],
-    "/(site)/MarketplaceHouses/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(site)/MarketplaceHouses/page.js"
-    ],
-    "/(site)/Home/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(site)/Home/page.js"
+      "static/chunks/app/(site)/ListingDetail/page.js"
     ],
     "/(site)/Dashboard/page": [
       "static/chunks/webpack.js",
@@ -70,11 +30,6 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/(site)/MarketplaceCars/page.js"
-    ],
-    "/(site)/ListingDetail/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(site)/ListingDetail/page.js"
     ]
   }
 }
