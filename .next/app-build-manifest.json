@@ -16,10 +16,10 @@
       "static/chunks/main-app.js",
       "static/chunks/app/(site)/layout.js"
     ],
-    "/(site)/page": [
+    "/(site)/Home/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(site)/page.js"
+      "static/chunks/app/(site)/Home/page.js"
     ],
     "/api/live-scores/route": [
       "static/chunks/webpack.js",
@@ -30,11 +30,6 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/api/weather/route.js"
-    ],
-    "/(site)/Home/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(site)/Home/page.js"
     ]
   }
 }
