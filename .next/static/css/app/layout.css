@@ -807,9 +807,6 @@ video {
 .mr-2 {
   margin-right: 0.5rem;
 }
-.mt-0\.5 {
-  margin-top: 0.125rem;
-}
 .mt-1 {
   margin-top: 0.25rem;
 }
@@ -830,9 +827,6 @@ video {
 }
 .mt-5 {
   margin-top: 1.25rem;
-}
-.mt-8 {
-  margin-top: 2rem;
 }
 .line-clamp-1 {
   overflow: hidden;
@@ -1038,9 +1032,6 @@ video {
 }
 .w-5 {
   width: 1.25rem;
-}
-.w-56 {
-  width: 14rem;
 }
 .w-6 {
   width: 1.5rem;
@@ -1295,11 +1286,6 @@ video {
   --tw-space-x-reverse: 0;
   margin-right: calc(0.25rem * var(--tw-space-x-reverse));
   margin-left: calc(0.25rem * calc(1 - var(--tw-space-x-reverse)));
-}
-.space-x-3 > :not([hidden]) ~ :not([hidden]) {
-  --tw-space-x-reverse: 0;
-  margin-right: calc(0.75rem * var(--tw-space-x-reverse));
-  margin-left: calc(0.75rem * calc(1 - var(--tw-space-x-reverse)));
 }
 .space-x-4 > :not([hidden]) ~ :not([hidden]) {
   --tw-space-x-reverse: 0;
@@ -1568,10 +1554,6 @@ video {
   --tw-bg-opacity: 1;
   background-color: rgb(255 237 213 / var(--tw-bg-opacity, 1));
 }
-.bg-orange-400 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(251 146 60 / var(--tw-bg-opacity, 1));
-}
 .bg-popover {
   background-color: hsl(var(--popover));
 }
@@ -1600,10 +1582,6 @@ video {
 }
 .bg-sidebar-border {
   background-color: hsl(var(--sidebar-border));
-}
-.bg-slate-100 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(241 245 249 / var(--tw-bg-opacity, 1));
 }
 .bg-slate-200 {
   --tw-bg-opacity: 1;

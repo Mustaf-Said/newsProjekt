@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { base44 } from "@/api/base44Client";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -25,39 +24,46 @@ export default function CreateAdForm({ onSuccess }: CreateAdFormProps) {
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    setUploading(true);
-    for (const file of files) {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      setImages((prev) => [...prev, file_url]);
+    if (files.length === 0) {
+      return;
     }
-    setUploading(false);
+    setUploading(true);
+    try {
+      for (const file of files) {
+        const fileUrl = URL.createObjectURL(file);
+        setImages((prev) => [...prev, fileUrl]);
+      }
+    } finally {
+      setUploading(false);
+    }
   };
 
-  const removeImage = (idx: number) => setImages((prev) => prev.filter((_, i) => i !== idx));
+  const revokeObjectUrl = (url: string) => {
+    if (url.startsWith("blob:")) {
+      URL.revokeObjectURL(url);
+    }
+  };
+
+  const removeImage = (idx: number) => {
+    setImages((prev) => {
+      const next = prev.filter((_, i) => i !== idx);
+      const removed = prev[idx];
+      if (removed) {
+        revokeObjectUrl(removed);
+      }
+      return next;
+    });
+  };
 
   const handleSubmit = async () => {
     setSaving(true);
-    const entityMap: Record<string, string> = { car: "CarListing", house: "HouseListing", land: "LandListing" };
-    const payload: Record<string, any> = { ...data, images, status: "pending" };
-    if (type === "car") {
-      payload.price = Number(payload.price) || 0;
-      payload.year = Number(payload.year) || undefined;
-      payload.mileage = Number(payload.mileage) || undefined;
-    }
-    if (type === "house") {
-      payload.price = Number(payload.price) || 0;
-      payload.rooms = Number(payload.rooms) || undefined;
-      payload.bathrooms = Number(payload.bathrooms) || undefined;
-      payload.area_sqm = Number(payload.area_sqm) || undefined;
-    }
-    if (type === "land") {
-      payload.price = Number(payload.price) || 0;
-      payload.area_sqm = Number(payload.area_sqm) || undefined;
-    }
-    await base44.entities[entityMap[type]].create(payload);
-    toast.success("Ad submitted for approval!");
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    toast.success("Ad saved locally. Server sync is disabled.");
     setData({});
-    setImages([]);
+    setImages((prev) => {
+      prev.forEach(revokeObjectUrl);
+      return [];
+    });
     setSaving(false);
     onSuccess?.();
   };

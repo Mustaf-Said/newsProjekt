@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { appParams } from "@/lib/app-params";
 
 type AuthError = { type: string; message: string } | null;
 

@@ -1,5 +1,11 @@
 {
   "/api/live-scores/route": "app/api/live-scores/route.js",
   "/api/weather/route": "app/api/weather/route.js",
-  "/(site)/Home/page": "app/(site)/Home/page.js"
+  "/_not-found/page": "app/_not-found/page.js",
+  "/(site)/Home/page": "app/(site)/Home/page.js",
+  "/(site)/LiveScores/page": "app/(site)/LiveScores/page.js",
+  "/(site)/WorldNews/page": "app/(site)/WorldNews/page.js",
+  "/(site)/FootballNews/page": "app/(site)/FootballNews/page.js",
+  "/(site)/MarketplaceCars/page": "app/(site)/MarketplaceCars/page.js",
+  "/(site)/LocalNews/page": "app/(site)/LocalNews/page.js"
 }

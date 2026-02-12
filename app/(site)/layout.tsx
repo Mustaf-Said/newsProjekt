@@ -5,20 +5,17 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createPageUrl } from "@/utils";
-import { base44 } from "@/api/base44Client";
 import {
   Home, Newspaper, Trophy, ShoppingBag,
-  User, LogOut, Menu, X, ChevronDown, Sun, Moon,
-  LayoutDashboard, Shield,
+  Menu, X, ChevronDown, Sun, Moon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
-  DropdownMenuTrigger, DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
 export default function SiteLayout({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<any>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -27,7 +24,6 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
   const pathSegment = pathname === "/" ? "Home" : pathname.replace(/^\//, "").split("/")[0];
 
   useEffect(() => {
-    base44.auth.me().then(setUser).catch(() => { });
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
@@ -91,13 +87,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
               <button onClick={() => setDarkMode(!darkMode)} className="hover:text-[var(--accent)] transition-colors">
                 {darkMode ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
               </button>
-              {!user ? (
-                <button onClick={() => base44.auth.redirectToLogin()} className="hover:text-[var(--accent)] transition-colors">
-                  Sign In
-                </button>
-              ) : (
-                <span>Welcome, {user.full_name || user.email}</span>
-              )}
+              <span>Welcome, Guest</span>
             </div>
           </div>
         </div>
@@ -151,39 +141,6 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
               </nav>
 
               <div className="flex items-center gap-2">
-                {user && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="relative">
-                        <User className="w-4.5 h-4.5" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56">
-                      <div className="px-3 py-2">
-                        <p className="text-sm font-semibold">{user.full_name || "User"}</p>
-                        <p className="text-xs text-muted-foreground">{user.email}</p>
-                      </div>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem asChild>
-                        <Link href={createPageUrl("Dashboard")} className="cursor-pointer">
-                          <LayoutDashboard className="w-4 h-4 mr-2" /> Dashboard
-                        </Link>
-                      </DropdownMenuItem>
-                      {user.role === "admin" && (
-                        <DropdownMenuItem asChild>
-                          <Link href={createPageUrl("AdminPanel")} className="cursor-pointer">
-                            <Shield className="w-4 h-4 mr-2" /> Admin Panel
-                          </Link>
-                        </DropdownMenuItem>
-                      )}
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => base44.auth.logout()} className="text-red-600 cursor-pointer">
-                        <LogOut className="w-4 h-4 mr-2" /> Sign Out
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
-
                 <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
                   {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
                 </Button>
@@ -221,20 +178,6 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
                       {item.label}
                     </Link>
                   )
-                )}
-                {user && (
-                  <>
-                    <div className="border-t border-[var(--border)] pt-2 mt-2">
-                      <Link href={createPageUrl("Dashboard")} onClick={() => setMobileOpen(false)} className="flex items-center gap-2 px-3 py-2.5 text-sm rounded-lg hover:bg-[var(--bg-secondary)]">
-                        <LayoutDashboard className="w-4 h-4" /> Dashboard
-                      </Link>
-                      {user.role === "admin" && (
-                        <Link href={createPageUrl("AdminPanel")} onClick={() => setMobileOpen(false)} className="flex items-center gap-2 px-3 py-2.5 text-sm rounded-lg hover:bg-[var(--bg-secondary)]">
-                          <Shield className="w-4 h-4" /> Admin Panel
-                        </Link>
-                      )}
-                    </div>
-                  </>
                 )}
               </div>
             </div>
@@ -277,9 +220,6 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
                 <h4 className="text-white font-semibold mb-3 text-sm uppercase tracking-wider">Account</h4>
                 <div className="space-y-2">
                   <Link href={createPageUrl("Dashboard")} className="block text-sm hover:text-amber-400 transition-colors">Dashboard</Link>
-                  {!user && (
-                    <button onClick={() => base44.auth.redirectToLogin()} className="block text-sm hover:text-amber-400 transition-colors">Sign In</button>
-                  )}
                 </div>
               </div>
             </div>
