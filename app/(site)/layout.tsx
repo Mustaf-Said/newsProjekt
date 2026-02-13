@@ -258,6 +258,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
                     </Link>
                   )
                 )}
+                <div id="weglot_here"></div>
               </div>
             </div>
           )}
