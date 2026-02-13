@@ -180,6 +180,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
                     </Link>
                   )
                 )}
+                <div id="weglot_here"></div>
               </nav>
 
               <div className="flex items-center gap-2">
