@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Trophy, Circle, Loader2, RefreshCw } from "lucide-react";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function LiveScores() {
