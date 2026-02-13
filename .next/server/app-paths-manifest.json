@@ -1,5 +1,0 @@
-{
-  "/(site)/Dashboard/page": "app/(site)/Dashboard/page.js",
-  "/(site)/ListingDetail/page": "app/(site)/ListingDetail/page.js",
-  "/(site)/MarketplaceCars/page": "app/(site)/MarketplaceCars/page.js"
-}
