@@ -6,10 +6,11 @@ const Toaster = ({
   ...props
 }) => {
   const { theme = "system" } = useTheme()
+  const resolvedTheme = theme === "dark" || theme === "light" ? theme : "system"
 
   return (
     (<Sonner
-      theme={theme}
+      theme={resolvedTheme}
       className="toaster group"
       toastOptions={{
         classNames: {

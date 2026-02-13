@@ -1,11 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/api/supabaseClient";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/textarea";
 import {
   ChevronLeft,
@@ -17,7 +17,7 @@ import {
   Send
 } from "lucide-react";
 
-export default function ListingDetail() {
+function ListingDetailContent() {
   const searchParams = useSearchParams();
   const [imgIdx, setImgIdx] = useState(0);
   const [msgBody, setMsgBody] = useState("");
@@ -238,4 +238,18 @@ export default function ListingDetail() {
       </div>
     </div>
   );
+}
+
+const ListingDetailFallback = () => (
+  <div className="flex items-center justify-center min-h-[50vh]">
+    <Loader2 className="w-8 h-8 animate-spin text-[var(--text-secondary)]" />
+  </div>
+)
+
+export default function ListingDetail() {
+  return (
+    <Suspense fallback={<ListingDetailFallback />}>
+      <ListingDetailContent />
+    </Suspense>
+  )
 }

@@ -11,7 +11,7 @@ import {
   User, LogOut, Menu, X, ChevronDown, Sun, Moon,
   LayoutDashboard, Shield,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuTrigger, DropdownMenuSeparator,
