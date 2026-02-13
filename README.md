@@ -1,16 +1,57 @@
-# React + Vite
+# newsProjekt
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A full-featured Next.js 15 platform combining news aggregation, marketplace listings, and live information widgets with an admin dashboard powered by Supabase.
 
-Currently, two official plugins are available:
+## 🚀 Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### News & Content
 
-## React Compiler
+- **World News** - International news coverage
+- **Local News** - Community and regional updates
+- **Football News** - Sports-specific news and updates
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Marketplace
 
-## Expanding the ESLint configuration
+- **Cars Marketplace** - Buy/sell vehicles with detailed specs
+- **Houses Marketplace** - Real estate listings
+- **Land Marketplace** - Land and property sales
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Live Widgets
+
+- **Live Scores** - Real-time sports scores
+- **Weather Widget** - Current weather and forecasts
+- **Currency Widget** - Live exchange rates
+
+### Admin Dashboard
+
+- Publish and manage news articles
+- Moderate marketplace listings
+- View platform statistics and analytics
+- User and content management
+
+## 🛠️ Tech Stack
+
+- **Frontend**: Next.js 15 with App Router
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **UI Components**: shadcn/ui (Radix UI based)
+- **Backend**: Supabase (PostgreSQL + Auth)
+- **State Management**: React Query (@tanstack/react-query)
+- **Forms**: React Hook Form
+- **Icons**: Lucide React
+- **Charts**: Recharts
+
+## 📋 Prerequisites
+
+- Node.js 18+
+- npm or yarn
+- Supabase account
+
+## 🔧 Installation
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/Mustaf-Said/newsProjekt.git
+cd newsProjekt
+```
