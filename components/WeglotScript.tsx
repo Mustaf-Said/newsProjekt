@@ -15,7 +15,7 @@ export default function WeglotScript() {
       strategy="afterInteractive"
       onLoad={() => {
         window.Weglot.initialize({
-          api_key: "wg_198fe66593c57ca32991fd1e418925e9"
+          api_key: 'wg_198fe66593c57ca32991fd1e418925e92'
         })
       }}
     />
