@@ -20,7 +20,7 @@ export default function Home() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("articles")
-        .select("id, title, content, category, published_at, created_at")
+        .select("id, title, content, category, published_at, created_at, image_url")
         .eq("category", "local")
         .order("published_at", { ascending: false })
         .limit(10);
@@ -32,7 +32,7 @@ export default function Home() {
         headline: row.title,
         summary: row.content ? row.content.replace(/<[^>]+>/g, "").slice(0, 180) : "",
         content: row.content,
-        image_url: null,
+        image_url: row.image_url,
         publish_date: row.published_at,
         created_date: row.created_at,
       }));
