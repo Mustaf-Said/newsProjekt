@@ -3,6 +3,7 @@
 import { Clock } from "lucide-react";
 import { motion } from "framer-motion";
 import moment from "moment";
+import { useState } from "react";
 
 function FeaturedStory({ article }: { article: any }) {
   if (!article) return null;
@@ -91,13 +92,22 @@ type NewsPageLayoutProps = {
   title: string;
   tagColor: string;
   articles: any[];
-  selectedArticle: any;
-  onSelectArticle: (article: any) => void;
 };
 
-export default function NewsPageLayout({ title, tagColor, articles, selectedArticle, onSelectArticle }: NewsPageLayoutProps) {
-  const featured = articles[0];
-  const remaining = articles.slice(1);
+
+export default function NewsPageLayout({
+  title,
+  tagColor,
+  articles,
+}: NewsPageLayoutProps) {
+
+  const [selectedArticle, setSelectedArticle] = useState<any>(null);
+  const featured = articles?.[0] ?? null;
+  const remaining = articles?.slice(1) ?? [];
+  if (!articles?.length) {
+    return <p>No articles available</p>;
+  }
+
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -110,7 +120,7 @@ export default function NewsPageLayout({ title, tagColor, articles, selectedArti
 
       {selectedArticle ? (
         <div className="mb-10">
-          <button onClick={() => onSelectArticle(null)} className="text-sm text-amber-600 hover:text-amber-500 mb-4 flex items-center gap-1">
+          <button onClick={() => setSelectedArticle(null)} className="text-sm text-amber-600 hover:text-amber-500 mb-4 flex items-center gap-1">
             ← Back to articles
           </button>
           <div className="bg-[var(--bg-card)] rounded-2xl border border-[var(--border)] p-6 md:p-10">
@@ -125,7 +135,7 @@ export default function NewsPageLayout({ title, tagColor, articles, selectedArti
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-5">
             {remaining.map((a, i) => (
-              <ArticleCard key={i} article={a} index={i} onClick={() => onSelectArticle(a)} />
+              <ArticleCard key={i} article={a} index={i} onClick={() => setSelectedArticle(a)} />
             ))}
           </div>
           <div className="lg:col-span-1">
