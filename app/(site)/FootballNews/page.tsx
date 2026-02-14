@@ -51,8 +51,7 @@ export default function FootballNews() {
       title="Football News"
       tagColor="bg-green-600"
       articles={articles}
-      selectedArticle={selected}
-      onSelectArticle={setSelected}
     />
+
   );
 }

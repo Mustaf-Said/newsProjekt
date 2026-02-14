@@ -55,11 +55,10 @@ export default function LocalNews() {
 
   return (
     <NewsPageLayout
-      title="Local News"
-      tagColor="bg-amber-500"
+      title="Football News"
+      tagColor="bg-green-600"
       articles={articles}
-      selectedArticle={selected}
-      onSelectArticle={setSelected}
     />
+
   );
 }
