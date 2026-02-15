@@ -73,7 +73,9 @@ export async function GET() {
       return NextResponse.json({ success: true, inserted: 0 });
     }
 
-    const { error: insertError } = await supabaseServer.from("articles").insert(inserts);
+    const { error: insertError } = await supabaseServer
+      .from("articles")
+      .insert(inserts as any);
 
     if (insertError) {
       console.error("[cron:update-news] Failed to insert articles", insertError);

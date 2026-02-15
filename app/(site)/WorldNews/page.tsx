@@ -1,6 +1,17 @@
 import NewsPageLayout from "@/components/news/NewsPageLayout";
 import { getSupabaseServer } from "@/lib/supabaseServer";
 
+type ArticleRow = {
+  id?: string;
+  title?: string | null;
+  content?: string | null;
+  title_so?: string | null;
+  content_so?: string | null;
+  image_url?: string | null;
+  published_at?: string | null;
+  [key: string]: any;
+};
+
 async function getArticles() {
   try {
     const supabaseServer = getSupabaseServer();
@@ -15,7 +26,7 @@ async function getArticles() {
       throw error;
     }
 
-    return (data || []).map((row) => ({
+    return (data || []).map((row: ArticleRow) => ({
       title: row.title_so || row.title || "Untitled",
       description: row.content_so || row.content || "",
       image: row.image_url,
