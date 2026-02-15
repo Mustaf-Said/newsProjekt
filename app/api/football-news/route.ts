@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
+import { getSupabaseServer } from "@/lib/supabaseServer";
 
 export async function GET() {
-  const apiKey = process.env.NEXT_PUBLIC_NEWS_API_KEY;
-
   // Fallback football news data
   const fallbackArticles = [
     {
@@ -43,29 +42,25 @@ export async function GET() {
   ];
 
   try {
-    if (!apiKey) {
-      console.log("[football-news] No NEXT_PUBLIC_NEWS_API_KEY found, using fallback data");
+    const supabaseServer = getSupabaseServer();
+    const { data, error } = await supabaseServer
+      .from("articles")
+      .select("title, title_so, content, content_so, image_url, published_at")
+      .eq("category", "sport")
+      .order("published_at", { ascending: false })
+      .limit(12);
+
+    if (error) {
+      console.error("[football-news] Supabase query failed", error);
       return NextResponse.json({ articles: fallbackArticles });
     }
 
-    // Try to fetch from NewsAPI with football search
-    const newsRes = await fetch(
-      `https://newsapi.org/v2/everything?q=football%20soccer&sortBy=publishedAt&language=en&apiKey=${apiKey}`,
-      { headers: { "User-Agent": "NewsProject/1.0" } }
-    );
-
-    if (!newsRes.ok) {
-      console.log("[football-news] NewsAPI failed, using fallback data");
-      return NextResponse.json({ articles: fallbackArticles });
-    }
-
-    const newsData = await newsRes.json();
-    const articles = (newsData.articles || []).slice(0, 12).map((article: any) => ({
-      title: article.title,
-      description: article.description || article.content?.substring(0, 200),
-      urlToImage: article.urlToImage,
-      publishedAt: article.publishedAt,
-      source: article.source?.name || "Unknown",
+    const articles = (data || []).map((row) => ({
+      title: row.title_so || row.title || "Untitled",
+      description: row.content_so || row.content || "",
+      urlToImage: row.image_url,
+      publishedAt: row.published_at,
+      source: "Football News",
     }));
 
     return NextResponse.json({ articles: articles.length > 0 ? articles : fallbackArticles });

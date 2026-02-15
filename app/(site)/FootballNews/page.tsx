@@ -1,24 +1,35 @@
 import NewsPageLayout from "@/components/news/NewsPageLayout";
+import { getSupabaseServer } from "@/lib/supabaseServer";
 
 async function getArticles() {
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SITE_URL}/api/football-news`,
-      { cache: "no-store" }
-    );
+    const supabaseServer = getSupabaseServer();
+    const { data, error } = await supabaseServer
+      .from("articles")
+      .select("*")
+      .eq("category", "sport")
+      .order("published_at", { ascending: false })
+      .limit(24);
 
-    const data = await res.json();
+    if (error) {
+      throw error;
+    }
 
-    return (data.articles || []).map((a: any) => ({
-      title: a.title,
-      description: a.description,
-      image: a.urlToImage || a.image,
-      date: a.publishedAt,
-      source: a.source,
+    return (data || []).map((row) => ({
+      title: row.title_so || row.title || "Untitled",
+      description: row.content_so || row.content || "",
+      image: row.image_url,
+      date: row.published_at,
+      source: "Football News",
       tagColor: "bg-green-600",
     }));
-
-  } catch (e) {
+  } catch (e: any) {
+    console.error("[football-news-page] Failed to load articles", {
+      message: e?.message,
+      details: e?.details,
+      hint: e?.hint,
+      code: e?.code,
+    });
     return [{
       title: "Football news unavailable",
       description: "Unable to fetch football news at this time.",

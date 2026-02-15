@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
+import { getSupabaseServer } from "@/lib/supabaseServer";
 
 export async function GET() {
-  const apiKey = process.env.NEXT_PUBLIC_NEWS_API_KEY;
-
   // Fallback world news data
   const fallbackArticles = [
     {
@@ -43,29 +42,30 @@ export async function GET() {
   ];
 
   try {
-    if (!apiKey) {
-      console.log("[world-news] No NEXT_PUBLIC_NEWS_API_KEY found, using fallback data");
+    const supabaseServer = getSupabaseServer();
+    const { data, error } = await supabaseServer
+      .from("articles")
+      .select("*")
+      .eq("category", "world")
+      .order("published_at", { ascending: false })
+      .limit(12);
+
+    if (error) {
+      console.error("[world-news] Supabase query failed", {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code,
+      });
       return NextResponse.json({ articles: fallbackArticles });
     }
 
-    // Try to fetch from news API
-    const newsRes = await fetch(
-      `https://newsapi.org/v2/top-headlines?country=us&category=general&apiKey=${apiKey}`,
-      { headers: { "User-Agent": "NewsProject/1.0" } }
-    );
-
-    if (!newsRes.ok) {
-      console.log("[world-news] News API failed, using fallback data");
-      return NextResponse.json({ articles: fallbackArticles });
-    }
-
-    const newsData = await newsRes.json();
-    const articles = (newsData.articles || []).slice(0, 12).map((article: any) => ({
-      title: article.title,
-      description: article.description || article.content?.substring(0, 200),
-      urlToImage: article.urlToImage,
-      publishedAt: article.publishedAt,
-      source: article.source?.name || "Unknown",
+    const articles = (data || []).map((row) => ({
+      title: row.title_so || row.title || "Untitled",
+      description: row.content_so || row.content || "",
+      urlToImage: row.image_url,
+      publishedAt: row.published_at,
+      source: "World News",
     }));
 
     return NextResponse.json({ articles: articles.length > 0 ? articles : fallbackArticles });

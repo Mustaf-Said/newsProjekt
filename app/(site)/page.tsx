@@ -1,105 +1,75 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { supabase } from "@/api/supabaseClient";
-import { useQuery } from "@tanstack/react-query";
+import { getSupabaseServer } from "@/lib/supabaseServer";
 import HeroSlider from "@/components/home/HeroSlider";
 import NewsGrid from "@/components/home/NewsGrid";
 import WeatherWidget from "@/components/home/WeatherWidget";
 import CurrencyWidget from "@/components/home/CurrencyWidget";
 import LiveScoresWidget from "@/components/home/LiveScoresWidget";
-import { Loader2 } from "lucide-react";
+type ArticleRow = {
+  id: string;
+  title: string | null;
+  content: string | null;
+  title_so: string | null;
+  content_so: string | null;
+  category: "local" | "world" | "sport";
+  image_url: string | null;
+  published_at: string | null;
+  created_at: string | null;
+};
 
-export default function Home() {
-  const [worldNews, setWorldNews] = useState<any[]>([]);
-  const [footballNews, setFootballNews] = useState<any[]>([]);
-  const [apiLoading, setApiLoading] = useState(true);
+async function getArticles(category: ArticleRow["category"], limit: number) {
+  const supabaseServer = getSupabaseServer();
+  const { data, error } = await supabaseServer
+    .from("articles")
+    .select("*")
+    .eq("category", category)
+    .order("published_at", { ascending: false })
+    .limit(limit);
 
-  const { data: localNews = [] } = useQuery({
-    queryKey: ["localNews"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("articles")
-        .select("id, title, content, category, published_at, created_at")
-        .eq("category", "local")
-        .order("published_at", { ascending: false })
-        .limit(10);
+  if (error) {
+    console.error(`[home] Failed to load ${category} articles`, {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code,
+    });
+    return [] as ArticleRow[];
+  }
 
-      if (error) throw error;
+  return (data || []) as ArticleRow[];
+}
 
-      return (data || []).map((row) => ({
-        id: row.id,
-        headline: row.title,
-        summary: row.content ? row.content.replace(/<[^>]+>/g, "").slice(0, 180) : "",
-        content: row.content,
-        image_url: null,
-        publish_date: row.published_at,
-        created_date: row.created_at,
-      }));
-    },
-    initialData: [],
-  });
+export default async function Home() {
+  const [localRows, worldRows, sportRows] = await Promise.all([
+    getArticles("local", 10),
+    getArticles("world", 12),
+    getArticles("sport", 12),
+  ]);
 
-  useEffect(() => {
-    async function fetchAPINews() {
-      try {
-        const apiKey = process.env.NEXT_PUBLIC_NEWS_API_KEY;
-        if (!apiKey) {
-          setWorldNews([]);
-          setFootballNews([]);
-          return;
-        }
+  const localNews = (localRows || []).map((row) => ({
+    id: row.id,
+    headline: row.title || "",
+    summary: row.content ? row.content.replace(/<[^>]+>/g, "").slice(0, 180) : "",
+    content: row.content,
+    image_url: row.image_url,
+    publish_date: row.published_at,
+    created_date: row.created_at,
+  }));
 
-        const worldUrl = new URL("https://newsapi.org/v2/top-headlines");
-        worldUrl.searchParams.set("category", "general");
-        worldUrl.searchParams.set("language", "en");
-        worldUrl.searchParams.set("pageSize", "6");
-        worldUrl.searchParams.set("apiKey", apiKey);
+  const worldNews = (worldRows || []).map((row) => ({
+    title: row.title_so || row.title || "",
+    description: row.content_so || row.content || "",
+    urlToImage: row.image_url,
+    publishedAt: row.published_at,
+  }));
 
-        const footballUrl = new URL("https://newsapi.org/v2/everything");
-        footballUrl.searchParams.set("q", "football OR soccer");
-        footballUrl.searchParams.set("language", "en");
-        footballUrl.searchParams.set("sortBy", "publishedAt");
-        footballUrl.searchParams.set("pageSize", "6");
-        footballUrl.searchParams.set("apiKey", apiKey);
+  const footballNews = (sportRows || []).map((row) => ({
+    title: row.title_so || row.title || "",
+    description: row.content_so || row.content || "",
+    urlToImage: row.image_url,
+    publishedAt: row.published_at,
+  }));
 
-        const [worldRes, footballRes] = await Promise.all([
-          fetch(worldUrl.toString()),
-          fetch(footballUrl.toString()),
-        ]);
-
-        const worldJson = await worldRes.json();
-        const footballJson = await footballRes.json();
-
-        const worldArticles = (worldJson.articles || []).map((a: any) => ({
-          title: a.title,
-          description: a.description,
-          source: a.source?.name,
-          urlToImage: a.urlToImage,
-          publishedAt: a.publishedAt,
-        }));
-
-        const footballArticles = (footballJson.articles || []).map((a: any) => ({
-          title: a.title,
-          description: a.description,
-          source: a.source?.name,
-          urlToImage: a.urlToImage,
-          publishedAt: a.publishedAt,
-        }));
-
-        setWorldNews(worldArticles);
-        setFootballNews(footballArticles);
-      } catch (e) {
-        console.error(e);
-        setWorldNews([]);
-        setFootballNews([]);
-      }
-      setApiLoading(false);
-    }
-    fetchAPINews();
-  }, []);
-
-  const formatLocal = (localNews || []).map((n: any) => ({
+  const formatLocal = (localNews || []).map((n) => ({
     title: n.headline,
     description: n.summary,
     image: n.image_url || "https://images.unsplash.com/photo-1504711434969-e33886168d6c?w=600",
@@ -108,7 +78,7 @@ export default function Home() {
     date: n.publish_date || n.created_date,
   }));
 
-  const formatWorld = (worldNews || []).map((n: any) => ({
+  const formatWorld = (worldNews || []).map((n) => ({
     title: n.title,
     description: n.description,
     image: n.urlToImage || "https://images.unsplash.com/photo-1495020689067-958852a7765e?w=600",
@@ -117,7 +87,7 @@ export default function Home() {
     date: n.publishedAt,
   }));
 
-  const formatFootball = (footballNews || []).map((n: any) => ({
+  const formatFootball = (footballNews || []).map((n) => ({
     title: n.title,
     description: n.description,
     image: n.urlToImage || "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=600",
@@ -138,17 +108,8 @@ export default function Home() {
         </div>
 
         <NewsGrid title="Local News" articles={formatLocal} viewAllPage="LocalNews" tagColor="bg-amber-500" />
-
-        {apiLoading ? (
-          <div className="flex items-center justify-center py-16">
-            <Loader2 className="w-8 h-8 animate-spin text-[var(--text-secondary)]" />
-          </div>
-        ) : (
-          <>
-            <NewsGrid title="World News" articles={formatWorld} viewAllPage="WorldNews" tagColor="bg-blue-600" />
-            <NewsGrid title="Football News" articles={formatFootball} viewAllPage="FootballNews" tagColor="bg-green-600" />
-          </>
-        )}
+        <NewsGrid title="World News" articles={formatWorld} viewAllPage="WorldNews" tagColor="bg-blue-600" />
+        <NewsGrid title="Football News" articles={formatFootball} viewAllPage="FootballNews" tagColor="bg-green-600" />
       </div>
     </div>
   );
