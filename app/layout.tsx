@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import "./globals.css";
 import Providers from "./providers";
-import WeglotScript from "@/components/WeglotScript";
+/* import WeglotScript from "@/components/WeglotScript"; */
 export const metadata = {
   title: "newsProjekt",
   description: "News, marketplace, and live information platform",
@@ -12,10 +12,10 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="so-SO">
+
       <body>
         <Providers>
-          <WeglotScript />
           {children}</Providers>
       </body>
     </html>
