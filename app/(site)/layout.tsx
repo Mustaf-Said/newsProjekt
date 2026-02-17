@@ -194,7 +194,19 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
               </nav>
 
               <div className="flex items-center gap-2">
-                {user && (
+                {user && profile?.role === "admin" && (
+                  <Link href={createPageUrl("AdminPanel")}>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      title="Admin Panel"
+                      className="text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10"
+                    >
+                      <Shield className="w-4.5 h-4.5" />
+                    </Button>
+                  </Link>
+                )}
+                {user ? (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon" className="relative">
@@ -228,6 +240,19 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
+                ) : (
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    title="Sign In"
+                    className="text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10"
+                    onClick={() => {
+                      // Open Supabase auth
+                      window.location.href = "/auth";
+                    }}
+                  >
+                    <User className="w-4.5 h-4.5" />
+                  </Button>
                 )}
 
                 <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
