@@ -40,9 +40,9 @@ async function getArticles(category: ArticleRow["category"], limit: number) {
 
 export default async function Home() {
   const [localRows, worldRows, sportRows] = await Promise.all([
-    getArticles("local", 10),
-    getArticles("world", 12),
-    getArticles("sport", 12),
+    getArticles("local", 20),
+    getArticles("world", 20),
+    getArticles("sport", 20),
   ]);
 
   const localNews = (localRows || []).map((row) => ({

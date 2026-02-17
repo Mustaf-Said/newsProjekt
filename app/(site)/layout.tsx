@@ -142,7 +142,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
                   <Newspaper className="w-5 h-5 text-white" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-lg font-black tracking-tight leading-none">RAYGAL</span>
+                  <span className="text-lg font-black tracking-tight leading-none">RaygalRoyal</span>
                   <span className="text-[10px] font-medium text-[var(--text-secondary)] tracking-widest uppercase">News & Market</span>
                 </div>
               </Link>
@@ -304,7 +304,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
               </div>
             </div>
             <div className="border-t border-white/10 mt-10 pt-6 text-center text-xs">
-              © {new Date().getFullYear()} RAYGAL News & Market. All rights reserved.
+              © {new Date().getFullYear()} <Link href={"https://raygalroyal.vercel.app/"} target="_blank" className=" hover:text-amber-400 font-bold">RaygalRoyal</Link> News & Market. All rights reserved.
             </div>
           </div>
         </footer>
