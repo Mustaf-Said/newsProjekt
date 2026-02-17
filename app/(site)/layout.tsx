@@ -25,6 +25,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(false);
   const pathname = usePathname();
 
   const pathSegment = pathname === "/" ? "Home" : pathname.replace(/^\//, "").split("/")[0];
@@ -34,15 +35,82 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
     const loadProfile = async (currentUser: any) => {
       if (!currentUser) {
         setProfile(null);
+        setIsLoadingProfile(false);
         return;
       }
-      const { data } = await supabase
+
+      setIsLoadingProfile(true);
+      console.log("🔍 Fetching profile for user:", currentUser.id, currentUser.email);
+      console.log("🔑 Current user metadata:", currentUser.user_metadata);
+
+      // Test: Try to query without single() to see if data exists
+      const testQuery = await supabase
         .from("profiles")
-        .select("id, full_name, username, role")
-        .eq("id", currentUser.id)
-        .single();
-      if (isMounted) {
-        setProfile(data || null);
+        .select("id, full_name, role, email")
+        .eq("id", currentUser.id);
+      console.log("🧪 Test query (no .single()):", testQuery);
+
+      try {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("id, full_name, role, email")
+          .eq("id", currentUser.id)
+          .single();
+
+        console.log("📊 Profile query result:");
+        console.log("  - Data:", data);
+        console.log("  - Error:", error);
+        console.log("  - Error JSON:", JSON.stringify(error, null, 2));
+
+        if (error) {
+          // Profile doesn't exist - create it
+          console.error("❌ Profile fetch error!");
+          console.error("  - Error object:", error);
+          console.error("  - Error code:", error.code);
+          console.error("  - Error message:", error.message);
+          console.error("  - Error details:", error.details);
+          console.error("  - Error hint:", error.hint);
+          if (isMounted) {
+            const newProfile = {
+              id: currentUser.id,
+              full_name: currentUser.user_metadata?.full_name || "",
+              email: currentUser.email || "",
+              role: "member"
+            };
+            console.log("⚠️ Creating temp profile (NOT from DB):", newProfile);
+            setProfile(newProfile);
+
+            // Try to insert the new profile into database
+            try {
+              await supabase.from("profiles").insert([newProfile]);
+            } catch (insertErr) {
+              console.log("Profile already exists or couldn't be created");
+            }
+          }
+          setIsLoadingProfile(false);
+          return;
+        }
+
+        if (isMounted) {
+          console.log("✅ Profile loaded from DB:", data);
+          console.log("👤 User role is:", data?.role);
+          console.log("📋 Full profile object:", JSON.stringify(data, null, 2));
+          setProfile(data || null);
+        }
+      } catch (err) {
+        console.error("Profile load error:", err);
+        if (isMounted) {
+          setProfile({
+            id: currentUser.id,
+            full_name: currentUser.user_metadata?.full_name || "",
+            email: currentUser.email || "",
+            role: "member"
+          });
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingProfile(false);
+        }
       }
     };
 
@@ -52,6 +120,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
       if (error) {
         setUser(null);
         setProfile(null);
+        setIsLoadingProfile(false);
         return;
       }
       setUser(data.user || null);
@@ -131,7 +200,8 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
               <button onClick={() => setDarkMode(!darkMode)} className="hover:text-[var(--accent)] transition-colors">
                 {darkMode ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
               </button>
-              <span>Welcome, {profile?.full_name || profile?.username || user?.email || "Guest"}</span>
+              <span>Welcome, {profile?.full_name || user?.email || "Guest"} {profile?.role && `(${profile.role})`}</span>
+              {console.log("Rendering top bar - Profile role:", profile?.role, "Full profile:", profile)}
             </div>
           </div>
         </div>
@@ -194,11 +264,11 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
               </nav>
 
               <div className="flex items-center gap-2">
-                {user && profile?.role === "admin" && (
+                {user && profile?.role?.toLowerCase().trim() === "admin" && (
                   <Link href={createPageUrl("AdminPanel")}>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       title="Admin Panel"
                       className="text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10"
                     >
@@ -215,7 +285,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56">
                       <div className="px-3 py-2">
-                        <p className="text-sm font-semibold">{profile?.full_name || profile?.username || "User"}</p>
+                        <p className="text-sm font-semibold">{profile?.full_name || "User"}</p>
                         <p className="text-xs text-muted-foreground">{user.email}</p>
                       </div>
                       <DropdownMenuSeparator />
@@ -224,7 +294,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
                           <LayoutDashboard className="w-4 h-4 mr-2" /> Dashboard
                         </Link>
                       </DropdownMenuItem>
-                      {profile?.role === "admin" && (
+                      {profile?.role?.toLowerCase().trim() === "admin" && (
                         <DropdownMenuItem asChild>
                           <Link href={createPageUrl("AdminPanel")} className="cursor-pointer">
                             <Shield className="w-4 h-4 mr-2" /> Admin Panel
@@ -241,8 +311,8 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 ) : (
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     size="icon"
                     title="Sign In"
                     className="text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10"

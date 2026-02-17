@@ -35,7 +35,7 @@ export default function AuthPage() {
 
     try {
       if (isSignUp) {
-        const { error: signUpError } = await supabase.auth.signUp({
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -44,6 +44,24 @@ export default function AuthPage() {
         });
 
         if (signUpError) throw signUpError;
+
+        // Create profile for new user
+        if (signUpData.user) {
+          const { error: profileError } = await supabase
+            .from("profiles")
+            .insert({
+              id: signUpData.user.id,
+              full_name: "",
+              username: email.split("@")[0],
+              role: "member",
+              created_at: new Date().toISOString(),
+            });
+
+          if (profileError && profileError.code !== "23505") { // 23505 is duplicate key error
+            console.error("Profile creation error:", profileError);
+          }
+        }
+
         setError(null);
         alert("Sign up successful! Please check your email to confirm your account.");
         setEmail("");
