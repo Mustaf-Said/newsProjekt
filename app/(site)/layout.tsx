@@ -149,9 +149,9 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
                 </div> */}
                 <Image
                   src={"/logo22.png"}
-                  width={90}
-                  height={70}
-                  className="h-20 md:h-40 w-auto object-contain drop-shadow-sm mt-3"
+                  width={100}
+                  height={100}
+                  className="h-20 md:h-40 w-auto object-contain drop-shadow-sm mt-3 py-4"
                   priority
                   alt="RaygalRoyal Logo"
                 />
