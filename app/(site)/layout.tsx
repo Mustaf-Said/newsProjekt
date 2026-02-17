@@ -10,12 +10,14 @@ import {
   Home, Newspaper, Trophy, ShoppingBag,
   User, LogOut, Menu, X, ChevronDown, Sun, Moon,
   LayoutDashboard, Shield,
+  Fullscreen,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuTrigger, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import Image from "next/image";
 
 export default function SiteLayout({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<any>(null);
@@ -136,15 +138,23 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
 
         <header className={`sticky top-0 z-50 transition-all duration-300 ${scrolled ? "bg-[var(--bg-primary)]/95 backdrop-blur-xl shadow-lg" : "bg-[var(--bg-primary)] shadow-sm"}`}>
           <div className="max-w-7xl mx-auto px-4">
-            <div className="flex items-center justify-between h-16">
-              <Link href={createPageUrl("Home")} className="flex items-center gap-2.5">
-                <div className="w-9 h-9 bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/20">
+            <div className="flex items-center justify-between h-16 ">
+              <Link href={createPageUrl("Home")} className="flex items-center h-full">
+                {/*   <div className="w-9 h-9 bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/20">
                   <Newspaper className="w-5 h-5 text-white" />
                 </div>
                 <div className="flex flex-col">
                   <span className="text-lg font-black tracking-tight leading-none">RaygalRoyal</span>
                   <span className="text-[10px] font-medium text-[var(--text-secondary)] tracking-widest uppercase">News & Market</span>
-                </div>
+                </div> */}
+                <Image
+                  src={"/logo22.png"}
+                  width={90}
+                  height={70}
+                  className="h-20 md:h-40 w-auto object-contain drop-shadow-sm mt-3"
+                  priority
+                  alt="RaygalRoyal Logo"
+                />
               </Link>
 
               <nav className="hidden lg:flex items-center gap-1">
