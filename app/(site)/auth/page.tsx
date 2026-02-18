@@ -52,7 +52,7 @@ export default function AuthPage() {
             .insert({
               id: signUpData.user.id,
               full_name: "",
-              username: email.split("@")[0],
+              email: email,
               role: "member",
               created_at: new Date().toISOString(),
             });

@@ -111,7 +111,7 @@ export default function AdminPanel() {
       }
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, full_name, username")
+        .select("id, full_name, email")
         .in("id", pendingUserIds);
 
       if (error) throw error;
@@ -121,9 +121,9 @@ export default function AdminPanel() {
   });
 
   const authorMap = useMemo(() => {
-    const map = new Map<string, { full_name: string | null; username: string | null }>();
+    const map = new Map<string, { full_name: string | null; email: string | null }>();
     pendingAuthors.forEach((author: any) => {
-      map.set(author.id, { full_name: author.full_name || null, username: author.username || null });
+      map.set(author.id, { full_name: author.full_name || null, email: author.email || null });
     });
     return map;
   }, [pendingAuthors]);
@@ -133,7 +133,7 @@ export default function AdminPanel() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, full_name, username, role, created_at")
+        .select("id, full_name, email, role, created_at")
         .order("created_at", { ascending: false })
         .limit(20);
 
@@ -353,7 +353,7 @@ export default function AdminPanel() {
                 const city = details.city || details.location_details || "Unknown";
                 const price = details.price ? `$${Number(details.price).toLocaleString()}` : "N/A";
                 const author = authorMap.get(item.user_id || "");
-                const byName = author?.full_name || author?.username || (item.user_id ? `${item.user_id.slice(0, 6)}...` : "Unknown");
+                const byName = author?.full_name || author?.email || (item.user_id ? `${item.user_id.slice(0, 6)}...` : "Unknown");
 
                 return (
                   <div key={item.id} className="bg-[var(--bg-card)] rounded-xl border border-[var(--border)] p-4 flex items-center gap-4">
@@ -395,10 +395,10 @@ export default function AdminPanel() {
               {users.map((user: any) => (
                 <div key={user.id} className="bg-[var(--bg-card)] rounded-xl border border-[var(--border)] p-4 flex items-center gap-4">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-white font-bold">
-                    {(user.full_name || user.username || "U")[0]?.toUpperCase()}
+                    {(user.full_name || user.email || "U")[0]?.toUpperCase()}
                   </div>
                   <div className="flex-1">
-                    <p className="font-bold text-sm">{user.full_name || user.username || "No name"}</p>
+                    <p className="font-bold text-sm">{user.full_name || user.email || "No name"}</p>
                     <p className="text-xs text-[var(--text-secondary)]">Role: {user.role || "member"}</p>
                   </div>
                   <span className="text-xs text-[var(--text-secondary)]">{moment(user.created_at).fromNow()}</span>

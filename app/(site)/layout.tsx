@@ -26,6 +26,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
   const [darkMode, setDarkMode] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
   const pathname = usePathname();
 
   const pathSegment = pathname === "/" ? "Home" : pathname.replace(/^\//, "").split("/")[0];
@@ -36,19 +37,12 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
       if (!currentUser) {
         setProfile(null);
         setIsLoadingProfile(false);
+        setProfileError(null);
         return;
       }
 
       setIsLoadingProfile(true);
-      console.log("🔍 Fetching profile for user:", currentUser.id, currentUser.email);
-      console.log("🔑 Current user metadata:", currentUser.user_metadata);
-
-      // Test: Try to query without single() to see if data exists
-      const testQuery = await supabase
-        .from("profiles")
-        .select("id, full_name, role, email")
-        .eq("id", currentUser.id);
-      console.log("🧪 Test query (no .single()):", testQuery);
+      setProfileError(null);
 
       try {
         const { data, error } = await supabase
@@ -57,55 +51,33 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
           .eq("id", currentUser.id)
           .single();
 
-        console.log("📊 Profile query result:");
-        console.log("  - Data:", data);
-        console.log("  - Error:", error);
-        console.log("  - Error JSON:", JSON.stringify(error, null, 2));
+        if (error || !data) {
+          // Profile doesn't exist - user is not registered
+          console.warn("⚠️ User authenticated but profile not found:", currentUser.email);
+          setProfileError("This user is not a member. Please create an account to log in.");
 
-        if (error) {
-          // Profile doesn't exist - create it
-          console.error("❌ Profile fetch error!");
-          console.error("  - Error object:", error);
-          console.error("  - Error code:", error.code);
-          console.error("  - Error message:", error.message);
-          console.error("  - Error details:", error.details);
-          console.error("  - Error hint:", error.hint);
+          // Sign out the user automatically
+          await supabase.auth.signOut();
+
           if (isMounted) {
-            const newProfile = {
-              id: currentUser.id,
-              full_name: currentUser.user_metadata?.full_name || "",
-              email: currentUser.email || "",
-              role: "member"
-            };
-            console.log("⚠️ Creating temp profile (NOT from DB):", newProfile);
-            setProfile(newProfile);
-
-            // Try to insert the new profile into database
-            try {
-              await supabase.from("profiles").insert([newProfile]);
-            } catch (insertErr) {
-              console.log("Profile already exists or couldn't be created");
-            }
+            setUser(null);
+            setProfile(null);
           }
           setIsLoadingProfile(false);
           return;
         }
 
         if (isMounted) {
-          console.log("✅ Profile loaded from DB:", data);
-          console.log("👤 User role is:", data?.role);
-          console.log("📋 Full profile object:", JSON.stringify(data, null, 2));
-          setProfile(data || null);
+          console.log("✅ Profile loaded:", data.full_name, `(${data.role})`);
+          setProfile(data);
         }
       } catch (err) {
         console.error("Profile load error:", err);
+        setProfileError("Error loading profile. Please try again.");
+        await supabase.auth.signOut();
         if (isMounted) {
-          setProfile({
-            id: currentUser.id,
-            full_name: currentUser.user_metadata?.full_name || "",
-            email: currentUser.email || "",
-            role: "member"
-          });
+          setUser(null);
+          setProfile(null);
         }
       } finally {
         if (isMounted) {
@@ -193,6 +165,25 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
       `}</style>
 
       <div className="bg-[var(--bg-primary)] text-[var(--text-primary)] min-h-screen transition-colors duration-300">
+        {profileError && (
+          <div className="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 px-4 py-3 shadow-md">
+            <div className="max-w-7xl mx-auto flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+                <p className="text-sm font-medium text-red-800 dark:text-red-200">{profileError}</p>
+              </div>
+              <button
+                onClick={() => setProfileError(null)}
+                className="text-red-500 hover:text-red-700 dark:hover:text-red-300"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="bg-[var(--navy)] text-white/80 text-xs py-2 px-4">
           <div className="max-w-7xl mx-auto flex justify-between items-center">
             <span>{new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</span>
@@ -201,7 +192,6 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
                 {darkMode ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
               </button>
               <span>Welcome, {profile?.full_name || user?.email || "Guest"} {profile?.role && `(${profile.role})`}</span>
-              {console.log("Rendering top bar - Profile role:", profile?.role, "Full profile:", profile)}
             </div>
           </div>
         </div>
