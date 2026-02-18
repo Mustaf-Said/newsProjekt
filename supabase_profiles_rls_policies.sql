@@ -2,6 +2,11 @@
 -- FIX: Profiles Table RLS Policies
 -- ===================================================================
 -- This fixes the issue where users cannot read their own profile data
+-- and where new users cannot create their profile during signup
+-- 
+-- IMPORTANT: After running this SQL, restart your Next.js app!
+-- Also ensure SUPABASE_SERVICE_ROLE_KEY is set in your .env.local
+--
 -- Run this in your Supabase SQL Editor
 -- ===================================================================
 
@@ -31,6 +36,9 @@ DROP POLICY IF EXISTS "Users can read own profile" ON profiles;
 DROP POLICY IF EXISTS "Users can insert own profile" ON profiles;
 DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
 DROP POLICY IF EXISTS "Enable read access for authenticated users" ON profiles;
+DROP POLICY IF EXISTS "Service role can insert profiles" ON profiles;
+DROP POLICY IF EXISTS "Admins can read all profiles" ON profiles;
+DROP POLICY IF EXISTS "Admins can update all profiles" ON profiles;
 
 -- ===================================================================
 -- CORRECT POLICIES
@@ -50,7 +58,14 @@ CREATE POLICY "Users can insert own profile"
   TO authenticated
   WITH CHECK (auth.uid() = id);
 
--- 3. Allow users to UPDATE their own profile
+-- 3. Allow service role to insert profiles (for signup via API)
+CREATE POLICY "Service role can insert profiles"
+  ON profiles
+  FOR INSERT
+  TO service_role
+  WITH CHECK (true);
+
+-- 4. Allow users to UPDATE their own profile
 CREATE POLICY "Users can update own profile"
   ON profiles
   FOR UPDATE
