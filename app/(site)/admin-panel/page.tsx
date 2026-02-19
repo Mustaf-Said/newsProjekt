@@ -38,6 +38,7 @@ const CATEGORY_OPTIONS = [
 export default function AdminPanel() {
   const queryClient = useQueryClient();
   const [publishing, setPublishing] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [headline, setHeadline] = useState("");
   const [summary, setSummary] = useState("");
   const [content, setContent] = useState("");
@@ -146,8 +147,41 @@ export default function AdminPanel() {
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const localUrl = URL.createObjectURL(file);
-    setImageUrl(localUrl);
+
+    setUploadingImage(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+
+      if (!accessToken) {
+        toast.error("Session expired. Please sign in again.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/upload-image", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        },
+        body: formData
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result?.url) {
+        console.error(result);
+        toast.error(`Image upload failed. ${result?.error || "Please try again."}`);
+        return;
+      }
+
+      setImageUrl(result.url);
+    } finally {
+      setUploadingImage(false);
+      e.target.value = "";
+    }
   };
 
   const publishNews = async () => {
@@ -159,15 +193,14 @@ export default function AdminPanel() {
     setPublishing(true);
     const { data: authData } = await supabase.auth.getUser();
     const userId = authData.user?.id || null;
-    const safeImageUrl = imageUrl.startsWith("blob:") ? "" : imageUrl;
-
-    const imageBlock = safeImageUrl ? `<img src=\"${safeImageUrl}\" alt=\"\" />\n\n` : "";
+    const safeImageUrl = imageUrl.startsWith("blob:") ? "" : imageUrl.trim();
     const summaryBlock = summary.trim() ? `<p>${summary.trim()}</p>\n\n` : "";
-    const composedContent = `${imageBlock}${summaryBlock}${content}`.trim();
+    const composedContent = `${summaryBlock}${content}`.trim();
 
     const { error } = await supabase.from("articles").insert({
       title: headline.trim(),
       content: composedContent || content.trim(),
+      image_url: safeImageUrl || null,
       category,
       author_id: userId,
       published_at: new Date().toISOString()
@@ -288,7 +321,7 @@ export default function AdminPanel() {
                   <div className="flex gap-2">
                     <Input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="Image URL or upload..." className="flex-1" />
                     <label className="cursor-pointer">
-                      <Button variant="outline" asChild>
+                      <Button variant="outline" asChild disabled={uploadingImage}>
                         <span><Upload className="w-4 h-4" /></span>
                       </Button>
                       <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />

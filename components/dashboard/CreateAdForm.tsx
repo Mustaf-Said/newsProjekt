@@ -15,7 +15,6 @@ type CreateAdFormProps = {
 };
 
 export default function CreateAdForm({ onSuccess }: CreateAdFormProps) {
-  const storageBucket = process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || "public";
   const [type, setType] = useState("car");
   const [data, setData] = useState<Record<string, any>>({});
   const [images, setImages] = useState<string[]>([]);
@@ -58,23 +57,36 @@ export default function CreateAdForm({ onSuccess }: CreateAdFormProps) {
     }
     setUploading(true);
     try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+
+      if (!accessToken) {
+        toast.error("Session expired. Please sign in again.");
+        return;
+      }
+
       const uploadedUrls: string[] = [];
       for (const file of files) {
-        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
-        const path = `announcements/${userId}/${Date.now()}-${safeName}`;
-        const { error } = await supabase.storage.from(storageBucket).upload(path, file, {
-          cacheControl: "3600",
-          upsert: false
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const response = await fetch("/api/upload-image", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          },
+          body: formData
         });
-        if (error) {
-          console.error(error);
-          toast.error(`Failed to upload ${file.name}. Check bucket: ${storageBucket}`);
+
+        const result = await response.json();
+
+        if (!response.ok || !result?.url) {
+          console.error(result);
+          toast.error(`Failed to upload ${file.name}. ${result?.error || "Please try again."}`);
           continue;
         }
-        const { data } = supabase.storage.from(storageBucket).getPublicUrl(path);
-        if (data?.publicUrl) {
-          uploadedUrls.push(data.publicUrl);
-        }
+
+        uploadedUrls.push(result.url);
       }
       if (uploadedUrls.length > 0) {
         setImages((prev) => [...prev, ...uploadedUrls]);
