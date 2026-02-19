@@ -27,13 +27,15 @@ export async function POST(request: NextRequest) {
       try {
         const { data, error } = await supabase
           .from("profiles")
-          .insert({
-            id: userId,
-            full_name: fullName,
-            email: email,
-            role: "member",
-            created_at: new Date().toISOString(),
-          })
+          .insert([
+            {
+              id: userId,
+              full_name: fullName,
+              email: email,
+              role: "member",
+              created_at: new Date().toISOString(),
+            } as any
+          ])
           .select();
 
         if (error) {
