@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
               email: email,
               role: "member",
               created_at: new Date().toISOString(),
-            } as any
+            }
           ])
           .select();
 

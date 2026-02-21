@@ -1,16 +1,8 @@
 import NewsPageLayout from "@/components/news/NewsPageLayout";
 import { getSupabaseServer } from "@/lib/supabaseServer";
+import type { Database } from "@/lib/database.types";
 
-type ArticleRow = {
-  id?: string;
-  title?: string | null;
-  content?: string | null;
-  title_so?: string | null;
-  content_so?: string | null;
-  image_url?: string | null;
-  published_at?: string | null;
-  [key: string]: any;
-};
+type ArticleRow = Database["public"]["Tables"]["articles"]["Row"];
 
 async function getArticles() {
   try {

@@ -30,7 +30,7 @@ export default function Dashboard() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("full_name, username")
+        .select("full_name")
         .eq("id", userId)
         .single();
 

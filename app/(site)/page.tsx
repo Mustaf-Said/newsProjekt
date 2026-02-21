@@ -4,19 +4,11 @@ import NewsGrid from "@/components/home/NewsGrid";
 import WeatherWidget from "@/components/home/WeatherWidget";
 import CurrencyWidget from "@/components/home/CurrencyWidget";
 import LiveScoresWidget from "@/components/home/LiveScoresWidget";
-type ArticleRow = {
-  id: string;
-  title: string | null;
-  content: string | null;
-  title_so: string | null;
-  content_so: string | null;
-  category: "local" | "world" | "sport";
-  image_url: string | null;
-  published_at: string | null;
-  created_at: string | null;
-};
+import type { Database } from "@/lib/database.types";
 
-async function getArticles(category: ArticleRow["category"], limit: number) {
+type ArticleRow = Database["public"]["Tables"]["articles"]["Row"];
+
+async function getArticles(category: ArticleRow["category"], limit: number): Promise<ArticleRow[]> {
   const supabaseServer = getSupabaseServer();
   const { data, error } = await supabaseServer
     .from("articles")
@@ -32,10 +24,10 @@ async function getArticles(category: ArticleRow["category"], limit: number) {
       hint: error.hint,
       code: error.code,
     });
-    return [] as ArticleRow[];
+    return [];
   }
 
-  return (data || []) as ArticleRow[];
+  return data || [];
 }
 
 export default async function Home() {

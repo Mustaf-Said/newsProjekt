@@ -37,7 +37,10 @@ function ListingDetailContent() {
         .single();
 
       if (error) throw error;
-      const details = data?.details || {};
+      const detailsRaw = data?.details ?? {};
+      const details = (detailsRaw && typeof detailsRaw === "object" && !Array.isArray(detailsRaw))
+        ? (detailsRaw as Record<string, any>)
+        : {};
       const images = Array.isArray(details.images)
         ? details.images
         : details.image_url

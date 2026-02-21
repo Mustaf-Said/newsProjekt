@@ -1,7 +1,7 @@
-import cron from "node-cron";
+import cron, { ScheduledTask } from "node-cron";
 
 let cronJobInitialized = false;
-let scheduledTask: cron.ScheduledTask | null = null;
+let scheduledTask: ScheduledTask | null = null;
 
 export function initializeNewsCronJob() {
   // Prevent duplicate cron jobs
