@@ -8,16 +8,16 @@ const nextConfig = {
         destination: "/",
         permanent: true,
       },
-      {
-        source: "/Home",
-        destination: "/",
-        permanent: true,
-      },
-      {
-        source: "/dashbaord",
-        destination: "/dashboard",
-        permanent: true,
-      },
+      /*   {
+          source: "/Home",
+          destination: "/",
+          permanent: true,
+        },
+        {
+          source: "/dashbaord",
+          destination: "/dashboard",
+          permanent: true,
+        }, */
       {
         source: "/Dashboard",
         destination: "/dashboard",
