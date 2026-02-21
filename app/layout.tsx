@@ -4,7 +4,7 @@ import Providers from "./providers";
 /* import WeglotScript from "@/components/WeglotScript"; */
 
 // Initialize cron job for news updates
-if (typeof window === "undefined") {
+if (typeof window === "undefined" && process.env.NODE_ENV === "development") {
   // This runs only on the server
   try {
     const { initializeNewsCronJob } = require("@/lib/cronScheduler");
