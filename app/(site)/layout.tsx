@@ -200,13 +200,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex items-center justify-between h-16 ">
               <Link href={createPageUrl("Home")} className="flex items-center h-full">
-                {/*   <div className="w-9 h-9 bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/20">
-                  <Newspaper className="w-5 h-5 text-white" />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-lg font-black tracking-tight leading-none">RaygalRoyal</span>
-                  <span className="text-[10px] font-medium text-[var(--text-secondary)] tracking-widest uppercase">News & Market</span>
-                </div> */}
+
                 <Image
                   src={"/logo22.png"}
                   width={100}
