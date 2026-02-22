@@ -211,7 +211,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
                   src={"/logo22.png"}
                   width={100}
                   height={100}
-                  className="h-20 md:h-40 w-auto object-contain drop-shadow-sm mt-3 py-4"
+                  className="md:h-40 w-auto object-contain drop-shadow-sm mt-3 py-4"
                   priority
                   alt="RaygalRoyal Logo"
                 />
@@ -371,7 +371,13 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
                   <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-amber-600 rounded-lg flex items-center justify-center">
                     <Newspaper className="w-4 h-4 text-white" />
                   </div>
-                  <span className="text-white text-lg font-black">RAYGAL</span>
+                  <span className="text-white text-lg font-black">
+                    <Link
+                      href={"/"}
+                      className="hover:text-amber-400 transition-colors">
+                      RaygalRoyal
+                    </Link>
+                  </span>
                 </div>
                 <p className="text-sm leading-relaxed">Your trusted source for breaking news, live sports, and the best marketplace deals.</p>
               </div>
