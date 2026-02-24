@@ -2,6 +2,7 @@ type NewsApiArticle = {
   title?: string | null;
   description?: string | null;
   content?: string | null;
+  url?: string | null;
   urlToImage?: string | null;
   publishedAt?: string | null;
   source?: { name?: string | null } | null;
@@ -18,15 +19,97 @@ export type NormalizedArticle = {
 const NEWS_API_BASE = "https://newsapi.org/v2";
 const DEFAULT_PAGE_SIZE = "12";
 
-function normalizeArticle(article: NewsApiArticle): NormalizedArticle | null {
+function decodeHtmlEntities(value: string): string {
+  return value
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
+}
+
+function stripHtml(value: string): string {
+  return decodeHtmlEntities(value.replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim();
+}
+
+function cleanNewsApiContent(value: string | null | undefined): string {
+  if (!value) {
+    return "";
+  }
+
+  return value.replace(/\s*\[\+\d+\s+chars\]$/i, "").trim();
+}
+
+function extractTextFromHtml(html: string): string {
+  const sanitized = html
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<noscript[\s\S]*?<\/noscript>/gi, " ");
+
+  const articleMatch = sanitized.match(/<article\b[^>]*>([\s\S]*?)<\/article>/i);
+  const mainMatch = sanitized.match(/<main\b[^>]*>([\s\S]*?)<\/main>/i);
+  const bodyMatch = sanitized.match(/<body\b[^>]*>([\s\S]*?)<\/body>/i);
+
+  const target = articleMatch?.[1] || mainMatch?.[1] || bodyMatch?.[1] || sanitized;
+  const paragraphMatches = [...target.matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/gi)];
+
+  if (paragraphMatches.length > 0) {
+    return paragraphMatches
+      .map((match) => stripHtml(match[1] || ""))
+      .filter(Boolean)
+      .join("\n\n")
+      .trim();
+  }
+
+  return stripHtml(target);
+}
+
+async function fetchFullArticleText(articleUrl: string): Promise<string | null> {
+  try {
+    const response = await fetch(articleUrl, {
+      cache: "no-store",
+      headers: {
+        "User-Agent": "Mozilla/5.0 NewsProjektBot/1.0",
+      },
+      signal: AbortSignal.timeout(10000),
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const contentType = response.headers.get("content-type") || "";
+    if (!contentType.includes("text/html")) {
+      return null;
+    }
+
+    const html = await response.text();
+    const extracted = extractTextFromHtml(html);
+
+    if (extracted.length < 300) {
+      return null;
+    }
+
+    return extracted;
+  } catch {
+    return null;
+  }
+}
+
+async function normalizeArticle(article: NewsApiArticle): Promise<NormalizedArticle | null> {
   const title = article.title?.trim();
   if (!title) {
     return null;
   }
 
+  const preview = cleanNewsApiContent(article.content) || article.description?.trim() || "";
+  const fullText = article.url ? await fetchFullArticleText(article.url) : null;
+  const content = fullText || preview;
+
   return {
     title,
-    content: article.description?.trim() || article.content?.trim() || "",
+    content,
     imageUrl: article.urlToImage || null,
     publishedAt: article.publishedAt || null,
     source: article.source?.name || null,
@@ -54,9 +137,13 @@ async function fetchFromNewsApi(path: string, params: Record<string, string>): P
     const json = await res.json();
     const articles = Array.isArray(json?.articles) ? json.articles : [];
 
-    return articles
-      .map((article: NewsApiArticle) => normalizeArticle(article))
-      .filter((article: NormalizedArticle | null): article is NormalizedArticle => Boolean(article));
+    const normalized = await Promise.all(
+      articles.map((article: NewsApiArticle) => normalizeArticle(article))
+    );
+
+    return normalized.filter(
+      (article: NormalizedArticle | null): article is NormalizedArticle => Boolean(article)
+    );
   } catch (error) {
     console.error("[newsFetcher] NewsAPI request error", error);
     return [];
