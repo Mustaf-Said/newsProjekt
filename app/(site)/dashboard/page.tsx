@@ -10,6 +10,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LayoutDashboard, Loader2, MessageCircle, Star } from "lucide-react";
 
+const DEFAULT_LISTING_IMAGE_BY_CATEGORY: Record<string, string> = {
+  car: "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=200",
+  house: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=200",
+  land: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=200",
+  other: "/contactMe.jpg"
+};
+
 export default function Dashboard() {
   const queryClient = useQueryClient();
 
@@ -45,7 +52,7 @@ export default function Dashboard() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("announcements")
-        .select("id, title, status, details, listing_type, created_at")
+        .select("id, title, status, category, details, listing_type, created_at")
         .eq("user_id", userId)
         .order("created_at", { ascending: false });
 
@@ -124,7 +131,8 @@ export default function Dashboard() {
             <div className="space-y-3">
               {myAds.map((item: any) => {
                 const details = item.details || {};
-                const image = details.images?.[0] || "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=200";
+                const category = item.category || "other";
+                const image = details.images?.[0] || DEFAULT_LISTING_IMAGE_BY_CATEGORY[category] || DEFAULT_LISTING_IMAGE_BY_CATEGORY.other;
                 const price = details.price ? `$${Number(details.price).toLocaleString()}` : "N/A";
                 const statusColor = item.status === "approved"
                   ? "bg-green-100 text-green-800"

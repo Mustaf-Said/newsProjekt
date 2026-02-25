@@ -30,7 +30,7 @@ export default function ListingCard({ listing, type, index, isFavorite, onToggle
               : type === "house"
                 ? "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=600"
                 : type === "other"
-                  ? "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=600"
+                  ? "/contactMe.jpg"
                   : "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600"
             )}
             alt={listing.title}

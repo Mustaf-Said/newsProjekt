@@ -14,6 +14,13 @@ type CreateAdFormProps = {
   onSuccess?: () => void;
 };
 
+const DEFAULT_LISTING_IMAGE_BY_TYPE: Record<string, string> = {
+  car: "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=600",
+  house: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=600",
+  land: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600",
+  other: "/contactMe.jpg"
+};
+
 const getErrorMessage = (error: unknown) => {
   if (!error) {
     return "Unknown error";
@@ -231,6 +238,10 @@ export default function CreateAdForm({ onSuccess }: CreateAdFormProps) {
     }
 
     setSaving(true);
+    const cleanImages = images.filter((url) => !url.startsWith("blob:"));
+    const defaultImage = DEFAULT_LISTING_IMAGE_BY_TYPE[type] || DEFAULT_LISTING_IMAGE_BY_TYPE.other;
+    const finalImages = cleanImages.length > 0 ? cleanImages : [defaultImage];
+
     const baseDetails = {
       city: data.city || null,
       price: Number(data.price) || 0,
@@ -238,7 +249,7 @@ export default function CreateAdForm({ onSuccess }: CreateAdFormProps) {
       contact_name: data.contact_name || null,
       contact_phone: data.contact_phone || null,
       contact_email: data.contact_email || null,
-      images: images.filter((url) => !url.startsWith("blob:"))
+      images: finalImages
     };
 
     let details: Record<string, any> = { ...baseDetails };

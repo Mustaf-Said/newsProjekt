@@ -94,7 +94,7 @@ function ListingDetailContent() {
         listing?.category === "house"
           ? "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=900"
           : listing?.category === "other"
-            ? "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=900"
+            ? "/contactMe.jpg"
             : listing?.category === "land"
               ? "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=900"
               : "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=900"
