@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSupabaseServer } from "@/lib/supabaseServer";
+import { hasCompleteArticleContent } from "@/lib/articleQuality";
 
 type ArticleRow = {
   id?: string;
@@ -66,13 +67,15 @@ export async function GET() {
       return NextResponse.json({ articles: fallbackArticles });
     }
 
-    const articles = (data || []).map((row: ArticleRow) => ({
-      title: row.title_so || row.title || "Untitled",
-      description: row.content_so || row.content || "",
-      urlToImage: row.image_url,
-      publishedAt: row.published_at,
-      source: "Football News",
-    }));
+    const articles = (data || [])
+      .filter((row: ArticleRow) => hasCompleteArticleContent(row.content_so || row.content))
+      .map((row: ArticleRow) => ({
+        title: row.title_so || row.title || "Untitled",
+        description: row.content_so || row.content || "",
+        urlToImage: row.image_url,
+        publishedAt: row.published_at,
+        source: "Football News",
+      }));
 
     return NextResponse.json({ articles: articles.length > 0 ? articles : fallbackArticles });
   } catch (error) {

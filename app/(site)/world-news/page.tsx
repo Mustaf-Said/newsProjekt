@@ -1,6 +1,7 @@
 import NewsPageLayout from "@/components/news/NewsPageLayout";
 import { getSupabaseServer } from "@/lib/supabaseServer";
 import type { Database } from "@/lib/database.types";
+import { hasCompleteArticleContent } from "@/lib/articleQuality";
 
 type ArticleRow = Database["public"]["Tables"]["articles"]["Row"];
 
@@ -18,14 +19,16 @@ async function getArticles() {
       throw error;
     }
 
-    return (data || []).map((row: ArticleRow) => ({
-      title: row.title_so || row.title || "Untitled",
-      description: row.content_so || row.content || "",
-      image: row.image_url,
-      date: row.published_at,
-      source: "World News",
-      tagColor: "bg-blue-600",
-    }));
+    return (data || [])
+      .filter((row: ArticleRow) => hasCompleteArticleContent(row.content_so || row.content))
+      .map((row: ArticleRow) => ({
+        title: row.title_so || row.title || "Untitled",
+        description: row.content_so || row.content || "",
+        image: row.image_url,
+        date: row.published_at,
+        source: "World News",
+        tagColor: "bg-blue-600",
+      }));
   } catch (e: any) {
     console.error("[world-news-page] Failed to load articles", {
       message: e?.message,
