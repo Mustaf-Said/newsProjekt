@@ -15,10 +15,10 @@ if (typeof window === "undefined" && process.env.NODE_ENV === "development") {
 }
 
 export const metadata = {
-  title: "newsProjekt",
+  title: "",
   description: "News, marketplace, and live information platform",
   icons: {
-    icon: "/favicon.ico",
+    icon: "/logo2.png",
   },
 };
 
