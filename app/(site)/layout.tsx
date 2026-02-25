@@ -133,6 +133,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
         { label: "Cars", page: "MarketplaceCars" },
         { label: "Houses", page: "MarketplaceHouses" },
         { label: "Land", page: "MarketplaceLand" },
+        { label: "Other", page: "MarketplaceOther" },
       ],
     },
   ];
@@ -389,6 +390,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
                   <Link href={createPageUrl("MarketplaceCars")} className="block text-sm hover:text-amber-400 transition-colors">Cars</Link>
                   <Link href={createPageUrl("MarketplaceHouses")} className="block text-sm hover:text-amber-400 transition-colors">Houses</Link>
                   <Link href={createPageUrl("MarketplaceLand")} className="block text-sm hover:text-amber-400 transition-colors">Land</Link>
+                  <Link href={createPageUrl("MarketplaceOther")} className="block text-sm hover:text-amber-400 transition-colors">Other</Link>
                 </div>
               </div>
               <div>

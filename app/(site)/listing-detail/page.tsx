@@ -14,7 +14,8 @@ import {
   Mail,
   MapPin,
   Phone,
-  Send
+  Send,
+  User
 } from "lucide-react";
 
 function ListingDetailContent() {
@@ -66,6 +67,7 @@ function ListingDetailContent() {
         city,
         address: details.address || "",
         description: details.description || details.content || "",
+        contact_name: details.contact_name || details.seller_name || "",
         contact_phone: details.contact_phone || "",
         contact_email: details.contact_email || "",
         brand,
@@ -91,9 +93,11 @@ function ListingDetailContent() {
       return [
         listing?.category === "house"
           ? "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=900"
-          : listing?.category === "land"
-            ? "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=900"
-            : "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=900"
+          : listing?.category === "other"
+            ? "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=900"
+            : listing?.category === "land"
+              ? "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=900"
+              : "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=900"
       ];
     }
     return listing.images;
@@ -200,6 +204,11 @@ function ListingDetailContent() {
                   {listing.location_details && <div><p className="text-xs text-[var(--text-secondary)]">Location</p><p className="font-bold">{listing.location_details}</p></div>}
                 </>
               )}
+              {listing.category === "other" && (
+                <>
+                  {listing.condition && <div><p className="text-xs text-[var(--text-secondary)]">Condition</p><p className="font-bold capitalize">{listing.condition}</p></div>}
+                </>
+              )}
             </div>
 
             {listing.description && (
@@ -214,6 +223,11 @@ function ListingDetailContent() {
         <div className="space-y-6">
           <div className="bg-[var(--bg-card)] rounded-2xl border border-[var(--border)] p-6">
             <h3 className="font-bold text-lg mb-4">Contact Seller</h3>
+            {listing.contact_name && (
+              <p className="flex items-center gap-2 text-sm mb-3 text-[var(--text-secondary)]">
+                <User className="w-4 h-4" /> {listing.contact_name}
+              </p>
+            )}
             {listing.contact_phone && (
               <a href={`tel:${listing.contact_phone}`} className="flex items-center gap-2 text-sm mb-3 text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
                 <Phone className="w-4 h-4" /> {listing.contact_phone}

@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/api/supabaseClient";
 import ListingCard from "@/components/marketplace/ListingCard";
 import MarketplaceFilters from "@/components/marketplace/MarketplaceFilters";
-import { Loader2, Map } from "lucide-react";
+import { Loader2, Package } from "lucide-react";
 
 type Listing = {
   id: number;
@@ -15,27 +15,26 @@ type Listing = {
   currency?: string | null;
   city?: string | null;
   images?: string[];
-  land_type?: string | null;
-  area_sqm?: number | null;
+  condition?: string | null;
   is_featured?: boolean;
 };
 
-export default function MarketplaceLand() {
+export default function MarketplaceOther() {
   const [filters, setFilters] = useState({
     search: "",
     listing_type: "all",
     city: "all",
-    land_type: "all"
+    condition: "all"
   });
 
   const { data: listings = [], isLoading } = useQuery({
-    queryKey: ["marketplace-land"],
+    queryKey: ["marketplace-other"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("announcements")
         .select("id, title, listing_type, details, city, price")
         .eq("status", "approved")
-        .eq("category", "land")
+        .eq("category", "other")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -60,8 +59,7 @@ export default function MarketplaceLand() {
           currency: details.currency || "$",
           city,
           images,
-          land_type: details.land_type || null,
-          area_sqm: Number(details.area_sqm) || null,
+          condition: details.condition || null,
           is_featured: details.is_featured || false
         } as Listing;
       });
@@ -71,12 +69,12 @@ export default function MarketplaceLand() {
 
   const filterConfig = useMemo(() => {
     const cities = Array.from(new Set(listings.map((item) => item.city).filter(Boolean))) as string[];
-    const landTypes = Array.from(new Set(listings.map((item) => item.land_type).filter(Boolean))) as string[];
+    const conditions = Array.from(new Set(listings.map((item) => item.condition).filter(Boolean))) as string[];
     return {
       cities,
       listingTypes: ["sell", "rent"],
       extraFilters: [
-        { key: "land_type", label: "Land Type", options: landTypes }
+        { key: "condition", label: "Condition", options: conditions }
       ]
     };
   }, [listings]);
@@ -86,12 +84,12 @@ export default function MarketplaceLand() {
     return listings.filter((item) => {
       if (filters.listing_type !== "all" && item.listing_type !== filters.listing_type) return false;
       if (filters.city !== "all" && item.city !== filters.city) return false;
-      if (filters.land_type !== "all" && item.land_type !== filters.land_type) return false;
+      if (filters.condition !== "all" && item.condition !== filters.condition) return false;
       if (!term) return true;
       return (
         item.title.toLowerCase().includes(term) ||
         (item.city || "").toLowerCase().includes(term) ||
-        (item.land_type || "").toLowerCase().includes(term)
+        (item.condition || "").toLowerCase().includes(term)
       );
     });
   }, [filters, listings]);
@@ -99,11 +97,11 @@ export default function MarketplaceLand() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex items-center gap-3 mb-8">
-        <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-2xl flex items-center justify-center shadow-lg shadow-green-500/20">
-          <Map className="w-6 h-6 text-white" />
+        <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/20">
+          <Package className="w-6 h-6 text-white" />
         </div>
         <div>
-          <h1 className="text-3xl font-black text-[var(--text-primary)]">Land</h1>
+          <h1 className="text-3xl font-black text-[var(--text-primary)]">Other Listings</h1>
           <p className="text-sm text-[var(--text-secondary)]">Marketplace</p>
         </div>
       </div>
@@ -116,13 +114,13 @@ export default function MarketplaceLand() {
         </div>
       ) : filteredListings.length === 0 ? (
         <div className="text-center py-16 text-[var(--text-secondary)]">
-          <Map className="w-12 h-12 mx-auto opacity-30 mb-3" />
-          <p>No approved land listings found</p>
+          <Package className="w-12 h-12 mx-auto opacity-30 mb-3" />
+          <p>No approved other listings found</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredListings.map((item, index) => (
-            <ListingCard key={item.id} listing={item} type="land" index={index} />
+            <ListingCard key={item.id} listing={item} type="other" index={index} />
           ))}
         </div>
       )}

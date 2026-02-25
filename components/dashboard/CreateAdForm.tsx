@@ -14,6 +14,90 @@ type CreateAdFormProps = {
   onSuccess?: () => void;
 };
 
+const getErrorMessage = (error: unknown) => {
+  if (!error) {
+    return "Unknown error";
+  }
+
+  if (typeof error === "string") {
+    return error;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  if (typeof error === "object") {
+    const candidate = error as {
+      message?: string;
+      details?: string;
+      hint?: string;
+      code?: string;
+    };
+
+    const parts = [candidate.message, candidate.details, candidate.hint, candidate.code]
+      .filter(Boolean)
+      .map((value) => String(value));
+
+    if (parts.length > 0) {
+      return parts.join(" | ");
+    }
+
+    const ownProps = Object.getOwnPropertyNames(error);
+    if (ownProps.length > 0) {
+      const serialized = ownProps
+        .map((key) => {
+          const value = (error as Record<string, unknown>)[key];
+          return `${key}: ${String(value)}`;
+        })
+        .join(", ");
+
+      if (serialized) {
+        return serialized;
+      }
+    }
+  }
+
+  return "Unknown error";
+};
+
+const ensureProfileExists = async (userId: string) => {
+  const { data: existingProfile, error: profileReadError } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (profileReadError) {
+    return {
+      ok: false,
+      message: getErrorMessage(profileReadError)
+    };
+  }
+
+  if (existingProfile?.id) {
+    return { ok: true };
+  }
+
+  const { data: authData } = await supabase.auth.getUser();
+  const authUser = authData.user;
+
+  const { error: profileInsertError } = await supabase.from("profiles").insert({
+    id: userId,
+    email: authUser?.email || null,
+    full_name: authUser?.user_metadata?.full_name || null
+  });
+
+  if (profileInsertError) {
+    return {
+      ok: false,
+      message: getErrorMessage(profileInsertError)
+    };
+  }
+
+  return { ok: true };
+};
+
 export default function CreateAdForm({ onSuccess }: CreateAdFormProps) {
   const [type, setType] = useState("car");
   const [data, setData] = useState<Record<string, any>>({});
@@ -125,11 +209,33 @@ export default function CreateAdForm({ onSuccess }: CreateAdFormProps) {
       toast.error("Please sign in to create an ad.");
       return;
     }
+    const title = String(data.title || "").trim();
+    const city = String(data.city || "").trim();
+    const description = String(data.description || "").trim();
+    const price = Number(data.price);
+
+    if (!title || !city || !Number.isFinite(price) || price <= 0) {
+      toast.error("Please add title, city, and a valid price.");
+      return;
+    }
+
+    if (type === "other" && !description) {
+      toast.error("Please add description for Other listings.");
+      return;
+    }
+
+    const profileState = await ensureProfileExists(userId);
+    if (!profileState.ok) {
+      toast.error(`Your profile is not ready yet. ${profileState.message}`);
+      return;
+    }
+
     setSaving(true);
     const baseDetails = {
       city: data.city || null,
       price: Number(data.price) || 0,
       listing_type: data.listing_type || "sell",
+      contact_name: data.contact_name || null,
       contact_phone: data.contact_phone || null,
       contact_email: data.contact_email || null,
       images: images.filter((url) => !url.startsWith("blob:"))
@@ -169,23 +275,37 @@ export default function CreateAdForm({ onSuccess }: CreateAdFormProps) {
         location_details: data.location_details || null
       };
     }
+    if (type === "other") {
+      details = {
+        ...details,
+        condition: data.condition || "used",
+        item_details: data.description || null
+      };
+    }
 
     const { error } = await supabase.from("announcements").insert({
       user_id: userId,
-      title: data.title,
-      content: data.description || "",
+      title,
+      content: description,
       type: "listing",
       category: type,
       listing_type: data.listing_type || "sell",
-      city: data.city || null,
-      price: Number(data.price) || 0,
+      city,
+      price,
       details,
       status: "pending"
     });
 
     if (error) {
-      console.error(error);
-      toast.error("Failed to submit ad. Please try again.");
+      const message = getErrorMessage(error);
+      console.error("Failed to submit ad", error, message);
+      if (message.includes("category_check") && type === "other") {
+        toast.error("Database does not allow category 'other' yet. Run fix_announcements_category_check.sql in Supabase SQL Editor.");
+      } else if (message.includes("announcements_user_id_fkey") || message.includes("23503")) {
+        toast.error("Your account profile is missing. Please sign out and sign in again, then retry.");
+      } else {
+        toast.error(`Failed to submit ad. ${message}`);
+      }
       setSaving(false);
       return;
     }
@@ -210,6 +330,7 @@ export default function CreateAdForm({ onSuccess }: CreateAdFormProps) {
             <SelectItem value="car">Car</SelectItem>
             <SelectItem value="house">House / Apartment</SelectItem>
             <SelectItem value="land">Land</SelectItem>
+            <SelectItem value="other">Other</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -292,12 +413,28 @@ export default function CreateAdForm({ onSuccess }: CreateAdFormProps) {
           </>
         )}
 
-        <div><Label>Contact Phone</Label><Input value={data.contact_phone || ""} onChange={(e) => set("contact_phone", e.target.value)} /></div>
+        {type === "other" && (
+          <>
+            <div>
+              <Label>Condition *</Label>
+              <Select value={data.condition || "used"} onValueChange={(v) => set("condition", v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="new">New</SelectItem>
+                  <SelectItem value="used">Used</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </>
+        )}
+
+        <div><Label>Name</Label><Input value={data.contact_name || ""} onChange={(e) => set("contact_name", e.target.value)} /></div>
+        <div><Label>Mobile</Label><Input value={data.contact_phone || ""} onChange={(e) => set("contact_phone", e.target.value)} /></div>
         <div><Label>Contact Email</Label><Input value={data.contact_email || ""} onChange={(e) => set("contact_email", e.target.value)} /></div>
       </div>
 
       <div>
-        <Label>Description</Label>
+        <Label>{type === "other" ? "Description (Explain what item is)" : "Description"}</Label>
         <Textarea value={data.description || ""} onChange={(e) => set("description", e.target.value)} rows={4} />
       </div>
 
@@ -333,10 +470,11 @@ export default function CreateAdForm({ onSuccess }: CreateAdFormProps) {
         </div>
       </div>
 
-      <Button onClick={handleSubmit} disabled={saving || !data.title || !data.price || !data.city} className="bg-amber-500 hover:bg-amber-600 text-white">
+      <Button onClick={handleSubmit} disabled={saving} className="bg-amber-500 hover:bg-amber-600 text-white">
         {saving && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
         Submit Ad for Approval
       </Button>
+      <p className="text-xs text-[var(--text-secondary)]">This announcement is published after admin approval.</p>
     </div>
   );
 }

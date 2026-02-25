@@ -29,7 +29,9 @@ export default function ListingCard({ listing, type, index, isFavorite, onToggle
               ? "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=600"
               : type === "house"
                 ? "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=600"
-                : "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600"
+                : type === "other"
+                  ? "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=600"
+                  : "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600"
             )}
             alt={listing.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -83,6 +85,11 @@ export default function ListingCard({ listing, type, index, isFavorite, onToggle
             <>
               {listing.area_sqm && <span className="bg-[var(--bg-secondary)] px-2 py-0.5 rounded">{listing.area_sqm} m²</span>}
               {listing.land_type && <span className="bg-[var(--bg-secondary)] px-2 py-0.5 rounded capitalize">{listing.land_type}</span>}
+            </>
+          )}
+          {type === "other" && (
+            <>
+              {listing.condition && <span className="bg-[var(--bg-secondary)] px-2 py-0.5 rounded capitalize">{listing.condition}</span>}
             </>
           )}
         </div>
