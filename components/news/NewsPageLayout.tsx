@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import moment from "moment";
 import { useState } from "react";
 
-function FeaturedStory({ article }: { article: any }) {
+function FeaturedStory({ article, onReadMore }: { article: any; onReadMore: () => void }) {
   if (!article) return null;
   return (
     <div className="relative rounded-2xl overflow-hidden mb-10 group">
@@ -29,6 +29,13 @@ function FeaturedStory({ article }: { article: any }) {
           {article.source && <span>{article.source}</span>}
           {article.date && <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{moment(article.date).fromNow()}</span>}
         </div>
+        <button
+          onClick={onReadMore}
+          className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-amber-300 hover:text-amber-200 transition-colors"
+        >
+          Read More
+          <span aria-hidden>›</span>
+        </button>
       </div>
     </div>
   );
@@ -116,7 +123,7 @@ export default function NewsPageLayout({
         <h1 className="text-3xl md:text-4xl font-black text-[var(--text-primary)]">{title}</h1>
       </div>
 
-      <FeaturedStory article={featured} />
+      <FeaturedStory article={featured} onReadMore={() => setSelectedArticle(featured)} />
 
       {selectedArticle ? (
         <div className="mb-10">
