@@ -2,6 +2,8 @@ import NewsPageLayout from "@/components/news/NewsPageLayout";
 import { getSupabaseServer } from "@/lib/supabaseServer";
 import type { Database } from "@/lib/database.types";
 
+export const dynamic = "force-dynamic";
+
 type ArticleRow = Database["public"]["Tables"]["articles"]["Row"];
 
 async function getArticles() {

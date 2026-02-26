@@ -9,6 +9,8 @@ import ListingCard from "@/components/marketplace/ListingCard";
 import type { Database } from "@/lib/database.types";
 import { ArrowRight } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 type ArticleRow = Database["public"]["Tables"]["articles"]["Row"];
 type AnnouncementCategory = "car" | "house" | "land" | "other";
 
