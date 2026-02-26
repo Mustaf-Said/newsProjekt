@@ -20,6 +20,16 @@ const NEWS_API_BASE = "https://newsapi.org/v2";
 const DEFAULT_PAGE_SIZE = "12";
 const ENABLE_FULL_ARTICLE_SCRAPE = process.env.ENABLE_FULL_ARTICLE_SCRAPE === "true";
 
+function getNewsApiKey(): string | null {
+  const key =
+    process.env.NEWS_API_KEY ||
+    process.env.WORLDNEWS_API_KEY ||
+    process.env.NEXT_PUBLIC_NEWS_API_KEY ||
+    null;
+
+  return key;
+}
+
 function decodeHtmlEntities(value: string): string {
   return value
     .replace(/&nbsp;/g, " ")
@@ -120,9 +130,9 @@ async function normalizeArticle(article: NewsApiArticle): Promise<NormalizedArti
 }
 
 async function fetchFromNewsApi(path: string, params: Record<string, string>): Promise<NormalizedArticle[]> {
-  const apiKey = process.env.NEWS_API_KEY;
+  const apiKey = getNewsApiKey();
   if (!apiKey) {
-    console.error("[newsFetcher] Missing NEWS_API_KEY");
+    console.error("[newsFetcher] Missing NEWS_API_KEY/WORLDNEWS_API_KEY/NEXT_PUBLIC_NEWS_API_KEY");
     return [];
   }
 
