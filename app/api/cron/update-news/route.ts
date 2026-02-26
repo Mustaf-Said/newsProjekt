@@ -53,7 +53,8 @@ async function writeCronRunLog(
 
 async function translateArticles(
   articles: NormalizedArticle[],
-  category: "world" | "sport"
+  category: "world" | "sport",
+  runTimestampIso: string
 ): Promise<ArticleInsert[]> {
   return Promise.all(
     articles.map(async (article) => {
@@ -72,7 +73,7 @@ async function translateArticles(
         content_so: contentSo,
         category,
         image_url: article.imageUrl,
-        published_at: article.publishedAt,
+        published_at: runTimestampIso,
       };
     })
   );
@@ -96,14 +97,15 @@ export async function GET(request: Request) {
     }
 
     const supabaseServer = getSupabaseServer();
+    const runTimestampIso = new Date().toISOString();
     const [worldNews, footballNews] = await Promise.all([
       fetchWorldNews(),
       fetchFootballNews(),
     ]);
 
     const [worldRows, sportRows] = await Promise.all([
-      translateArticles(worldNews, "world"),
-      translateArticles(footballNews, "sport"),
+      translateArticles(worldNews, "world", runTimestampIso),
+      translateArticles(footballNews, "sport", runTimestampIso),
     ]);
 
     const inserts = [...worldRows, ...sportRows];
