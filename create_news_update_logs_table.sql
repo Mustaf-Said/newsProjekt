@@ -15,3 +15,21 @@ CREATE INDEX IF NOT EXISTS idx_news_update_logs_ran_at
 
 COMMENT ON TABLE public.news_update_logs IS 'Execution logs for daily world and football news cron updates';
 COMMENT ON COLUMN public.news_update_logs.status IS 'success, skipped, or error';
+
+ALTER TABLE public.news_update_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.news_update_logs FORCE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Admins can read news update logs" ON public.news_update_logs;
+DROP POLICY IF EXISTS "Service role can insert news update logs" ON public.news_update_logs;
+
+CREATE POLICY "Admins can read news update logs"
+  ON public.news_update_logs
+  FOR SELECT
+  TO authenticated
+  USING (public.is_admin());
+
+CREATE POLICY "Service role can insert news update logs"
+  ON public.news_update_logs
+  FOR INSERT
+  TO service_role
+  WITH CHECK (true);

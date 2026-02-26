@@ -44,3 +44,15 @@ CREATE TABLE IF NOT EXISTS public.news_update_logs (
 ```
 
 After deployment, open `public.news_update_logs` in Supabase Table Editor and sort by `ran_at` descending.
+
+### Secure the logs table (important)
+
+If Supabase shows `RLS disabled` on `news_update_logs`, run:
+
+```sql
+-- file: fix_news_update_logs_rls.sql
+ALTER TABLE public.news_update_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.news_update_logs FORCE ROW LEVEL SECURITY;
+```
+
+Then refresh Table Editor and confirm it no longer shows unrestricted public access.
