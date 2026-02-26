@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { getSupabaseServer } from "@/lib/supabaseServer";
-import { hasCompleteArticleContent } from "@/lib/articleQuality";
 
 type ArticleRow = {
   id?: string;
@@ -68,10 +67,10 @@ export async function GET() {
     }
 
     const articles = (data || [])
-      .filter((row: ArticleRow) => hasCompleteArticleContent(row.content_so || row.content))
+      .filter((row: ArticleRow) => Boolean(row.title_so || row.title))
       .map((row: ArticleRow) => ({
         title: row.title_so || row.title || "Untitled",
-        description: row.content_so || row.content || "",
+        description: row.content_so || row.content || row.title_so || row.title || "",
         urlToImage: row.image_url,
         publishedAt: row.published_at,
         source: "Football News",

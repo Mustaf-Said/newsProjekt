@@ -7,7 +7,6 @@ import CurrencyWidget from "@/components/home/CurrencyWidget";
 import LiveScoresWidget from "@/components/home/LiveScoresWidget";
 import ListingCard from "@/components/marketplace/ListingCard";
 import type { Database } from "@/lib/database.types";
-import { hasCompleteArticleContent } from "@/lib/articleQuality";
 import { ArrowRight } from "lucide-react";
 
 type ArticleRow = Database["public"]["Tables"]["articles"]["Row"];
@@ -128,26 +127,23 @@ export default async function Home() {
     created_date: row.created_at,
   }));
 
-  const completeWorldRows = (worldRows || []).filter((row) =>
-    hasCompleteArticleContent(row.content_so || row.content)
-  );
-  const completeSportRows = (sportRows || []).filter((row) =>
-    hasCompleteArticleContent(row.content_so || row.content)
-  );
+  const worldNews = (worldRows || [])
+    .filter((row) => Boolean(row.title_so || row.title))
+    .map((row) => ({
+      title: row.title_so || row.title || "",
+      description: row.content_so || row.content || row.title_so || row.title || "",
+      urlToImage: row.image_url,
+      publishedAt: row.published_at,
+    }));
 
-  const worldNews = completeWorldRows.map((row) => ({
-    title: row.title_so || row.title || "",
-    description: row.content_so || row.content || "",
-    urlToImage: row.image_url,
-    publishedAt: row.published_at,
-  }));
-
-  const footballNews = completeSportRows.map((row) => ({
-    title: row.title_so || row.title || "",
-    description: row.content_so || row.content || "",
-    urlToImage: row.image_url,
-    publishedAt: row.published_at,
-  }));
+  const footballNews = (sportRows || [])
+    .filter((row) => Boolean(row.title_so || row.title))
+    .map((row) => ({
+      title: row.title_so || row.title || "",
+      description: row.content_so || row.content || row.title_so || row.title || "",
+      urlToImage: row.image_url,
+      publishedAt: row.published_at,
+    }));
 
   const formatLocal = (localNews || []).map((n) => ({
     title: n.headline,

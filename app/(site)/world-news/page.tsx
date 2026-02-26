@@ -1,7 +1,6 @@
 import NewsPageLayout from "@/components/news/NewsPageLayout";
 import { getSupabaseServer } from "@/lib/supabaseServer";
 import type { Database } from "@/lib/database.types";
-import { hasCompleteArticleContent } from "@/lib/articleQuality";
 
 type ArticleRow = Database["public"]["Tables"]["articles"]["Row"];
 
@@ -20,10 +19,10 @@ async function getArticles() {
     }
 
     return (data || [])
-      .filter((row: ArticleRow) => hasCompleteArticleContent(row.content_so || row.content))
+      .filter((row: ArticleRow) => Boolean(row.title_so || row.title))
       .map((row: ArticleRow) => ({
         title: row.title_so || row.title || "Untitled",
-        description: row.content_so || row.content || "",
+        description: row.content_so || row.content || row.title_so || row.title || "",
         image: row.image_url,
         date: row.published_at,
         source: "World News",

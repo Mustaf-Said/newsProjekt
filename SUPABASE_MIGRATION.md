@@ -23,3 +23,24 @@ After running this SQL:
 ## Alternative: Remove Translation Features
 
 If you don't want translations, I can update the code to remove all `title_so`/`content_so` references.
+
+## Cron Run Logs (Recommended)
+
+To verify that daily Vercel cron runs are working, also run:
+
+```sql
+-- create table used by /api/cron/update-news for execution logs
+-- file: create_news_update_logs_table.sql
+CREATE TABLE IF NOT EXISTS public.news_update_logs (
+	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+	job_name TEXT NOT NULL DEFAULT 'update-news',
+	status TEXT NOT NULL CHECK (status IN ('success', 'skipped', 'error')),
+	inserted_count INTEGER NOT NULL DEFAULT 0,
+	world_fetched INTEGER NOT NULL DEFAULT 0,
+	sport_fetched INTEGER NOT NULL DEFAULT 0,
+	error_message TEXT,
+	ran_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+After deployment, open `public.news_update_logs` in Supabase Table Editor and sort by `ran_at` descending.
