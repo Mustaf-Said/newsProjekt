@@ -5,6 +5,7 @@ import { getSupabaseServer } from "@/lib/supabaseServer";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 300;
 
 type ArticleInsert = {
   title: string;
@@ -43,8 +44,23 @@ async function translateArticles(
   );
 }
 
-export async function GET() {
+function isAuthorizedCronRequest(request: Request): boolean {
+  const cronSecret = process.env.CRON_SECRET;
+
+  if (!cronSecret) {
+    return true;
+  }
+
+  const authHeader = request.headers.get("authorization") || "";
+  return authHeader === `Bearer ${cronSecret}`;
+}
+
+export async function GET(request: Request) {
   try {
+    if (!isAuthorizedCronRequest(request)) {
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    }
+
     const supabaseServer = getSupabaseServer();
     const [worldNews, footballNews] = await Promise.all([
       fetchWorldNews(),
@@ -56,6 +72,13 @@ export async function GET() {
       translateArticles(footballNews, "sport"),
     ]);
 
+    const inserts = [...worldRows, ...sportRows];
+
+    if (inserts.length === 0) {
+      console.warn("[cron:update-news] No articles fetched; keeping existing records");
+      return NextResponse.json({ success: true, inserted: 0, skippedDelete: true });
+    }
+
     const { error: deleteError } = await supabaseServer
       .from("articles")
       .delete()
@@ -64,13 +87,6 @@ export async function GET() {
     if (deleteError) {
       console.error("[cron:update-news] Failed to delete old articles", deleteError);
       return NextResponse.json({ success: false }, { status: 500 });
-    }
-
-    const inserts = [...worldRows, ...sportRows];
-
-    if (inserts.length === 0) {
-      console.warn("[cron:update-news] No articles to insert");
-      return NextResponse.json({ success: true, inserted: 0 });
     }
 
     const { error: insertError } = await supabaseServer
@@ -82,7 +98,12 @@ export async function GET() {
       return NextResponse.json({ success: false }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, inserted: inserts.length });
+    return NextResponse.json({
+      success: true,
+      inserted: inserts.length,
+      worldFetched: worldNews.length,
+      sportFetched: footballNews.length,
+    });
   } catch (error) {
     console.error("[cron:update-news] Unexpected error", error);
     return NextResponse.json({ success: false }, { status: 500 });

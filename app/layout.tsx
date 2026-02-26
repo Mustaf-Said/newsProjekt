@@ -3,17 +3,6 @@ import "./globals.css";
 import Providers from "./providers";
 /* import WeglotScript from "@/components/WeglotScript"; */
 
-// Initialize cron job for news updates
-if (typeof window === "undefined" && process.env.NODE_ENV === "development") {
-  // This runs only on the server
-  try {
-    const { initializeNewsCronJob } = require("@/lib/cronScheduler");
-    initializeNewsCronJob();
-  } catch (error) {
-    console.error("Failed to initialize news cron job:", error);
-  }
-}
-
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {

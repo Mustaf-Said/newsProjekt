@@ -3,7 +3,21 @@
 import { Clock } from "lucide-react";
 import { motion } from "framer-motion";
 import moment from "moment";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+function RelativeTime({ date }: { date?: string | null }) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!date || !mounted) {
+    return <>Recently</>;
+  }
+
+  return <>{moment(date).fromNow()}</>;
+}
 
 function FeaturedStory({ article, onReadMore }: { article: any; onReadMore: () => void }) {
   if (!article) return null;
@@ -11,7 +25,7 @@ function FeaturedStory({ article, onReadMore }: { article: any; onReadMore: () =
     <div className="relative rounded-2xl overflow-hidden mb-10 group">
       <div className="aspect-[21/9] md:aspect-[21/8]">
         <img
-          src={article.image || "https://images.unsplash.com/photo-1504711434969-e33886168d6c?w=1200"}
+          src={article.image || "https://images.pexels.com/photos/10131170/pexels-photo-10131170.jpeg"}
           alt={article.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
         />
@@ -27,7 +41,7 @@ function FeaturedStory({ article, onReadMore }: { article: any; onReadMore: () =
         )}
         <div className="flex items-center gap-4 mt-4 text-white/50 text-xs">
           {article.source && <span>{article.source}</span>}
-          {article.date && <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{moment(article.date).fromNow()}</span>}
+          {article.date && <span className="flex items-center gap-1"><Clock className="w-3 h-3" /><RelativeTime date={article.date} /></span>}
         </div>
         <button
           onClick={onReadMore}
@@ -66,7 +80,7 @@ function ArticleCard({ article, index, onClick }: { article: any; index: number;
         )}
         <div className="flex items-center gap-3 text-[10px] text-[var(--text-secondary)]">
           {article.source && <span>{article.source}</span>}
-          {article.date && <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{moment(article.date).fromNow()}</span>}
+          {article.date && <span className="flex items-center gap-1"><Clock className="w-3 h-3" /><RelativeTime date={article.date} /></span>}
         </div>
       </div>
     </motion.div>
@@ -86,7 +100,7 @@ function TrendingSidebar({ articles }: { articles: any[] }) {
             <span className="text-2xl font-black text-amber-500/30 w-8 flex-shrink-0">{String(i + 1).padStart(2, "0")}</span>
             <div>
               <p className="text-sm font-semibold text-[var(--text-primary)] line-clamp-2 group-hover:text-amber-600 transition-colors">{a.title}</p>
-              {a.date && <p className="text-[10px] text-[var(--text-secondary)] mt-1">{moment(a.date).fromNow()}</p>}
+              {a.date && <p className="text-[10px] text-[var(--text-secondary)] mt-1"><RelativeTime date={a.date} /></p>}
             </div>
           </div>
         ))}

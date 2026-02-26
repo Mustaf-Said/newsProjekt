@@ -5,20 +5,26 @@ export async function GET() {
     // Manually call the update-news endpoint
     const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
     const host = process.env.VERCEL_URL || "localhost:3000";
-    
+    const cronSecret = process.env.CRON_SECRET;
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+    };
+
+    if (cronSecret) {
+      headers.authorization = `Bearer ${cronSecret}`;
+    }
+
     const response = await fetch(`${protocol}://${host}/api/cron/update-news`, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
     });
 
     const data = await response.json();
-    
-    return NextResponse.json({ 
-      success: true, 
+
+    return NextResponse.json({
+      success: true,
       message: "Manual news update triggered",
-      result: data 
+      result: data
     });
   } catch (error) {
     console.error("[manual-update] Error:", error);

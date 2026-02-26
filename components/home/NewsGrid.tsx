@@ -5,7 +5,25 @@ import { createPageUrl } from "@/utils";
 import { Clock, ArrowRight, X } from "lucide-react";
 import { motion } from "framer-motion";
 import moment from "moment";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+function RelativeTime({ date }: { date?: string | null }) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!date) {
+    return <>Recently</>;
+  }
+
+  if (!mounted) {
+    return <>Recently</>;
+  }
+
+  return <>{moment(date).fromNow()}</>;
+}
 
 function NewsCard({ article, index, onClick }: { article: any; index: number; onClick: () => void }) {
   return (
@@ -38,7 +56,7 @@ function NewsCard({ article, index, onClick }: { article: any; index: number; on
         <div className="flex items-center justify-between text-xs text-[var(--text-secondary)]">
           <div className="flex items-center gap-1">
             <Clock className="w-3 h-3" />
-            {article.date ? moment(article.date).fromNow() : "Recently"}
+            <RelativeTime date={article.date} />
           </div>
         </div>
       </div>
@@ -77,7 +95,7 @@ function ArticleModal({ article, onClose }: { article: any; onClose: () => void 
             {article.date && (
               <span className="flex items-center gap-1">
                 <Clock className="w-3 h-3" />
-                {moment(article.date).fromNow()}
+                <RelativeTime date={article.date} />
               </span>
             )}
           </div>
@@ -117,9 +135,9 @@ export default function NewsGrid({ title, articles, viewAllPage, tagColor }: New
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {articles.slice(0, 6).map((article, i) => (
-          <NewsCard 
-            key={i} 
-            article={article} 
+          <NewsCard
+            key={i}
+            article={article}
             index={i}
             onClick={() => setSelectedArticle(article)}
           />

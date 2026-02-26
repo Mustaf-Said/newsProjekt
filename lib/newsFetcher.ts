@@ -18,6 +18,7 @@ export type NormalizedArticle = {
 
 const NEWS_API_BASE = "https://newsapi.org/v2";
 const DEFAULT_PAGE_SIZE = "12";
+const ENABLE_FULL_ARTICLE_SCRAPE = process.env.ENABLE_FULL_ARTICLE_SCRAPE === "true";
 
 function decodeHtmlEntities(value: string): string {
   return value
@@ -104,7 +105,9 @@ async function normalizeArticle(article: NewsApiArticle): Promise<NormalizedArti
   }
 
   const preview = cleanNewsApiContent(article.content) || article.description?.trim() || "";
-  const fullText = article.url ? await fetchFullArticleText(article.url) : null;
+  const fullText = ENABLE_FULL_ARTICLE_SCRAPE && article.url
+    ? await fetchFullArticleText(article.url)
+    : null;
   const content = fullText || preview;
 
   return {

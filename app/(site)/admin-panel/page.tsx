@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import moment from "moment";
 import { supabase } from "@/api/supabaseClient";
@@ -34,6 +34,20 @@ const CATEGORY_OPTIONS = [
   "technology",
   "other"
 ];
+
+function RelativeTime({ date }: { date?: string | null }) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!date || !mounted) {
+    return <>Recently</>;
+  }
+
+  return <>{moment(date).fromNow()}</>;
+}
 
 export default function AdminPanel() {
   const queryClient = useQueryClient();
@@ -353,7 +367,7 @@ export default function AdminPanel() {
                     <h3 className="font-bold text-sm truncate">{item.title}</h3>
                     <div className="flex items-center gap-2 mt-1">
                       <Badge className="bg-green-100 text-green-800 border-0 text-[10px]">published</Badge>
-                      <span className="text-xs text-[var(--text-secondary)]">{moment(item.created_at).fromNow()}</span>
+                      <span className="text-xs text-[var(--text-secondary)]"><RelativeTime date={item.created_at} /></span>
                     </div>
                   </div>
                   <Button variant="ghost" size="icon" onClick={() => deleteNews(item.id)} className="text-red-500">
@@ -434,7 +448,7 @@ export default function AdminPanel() {
                     <p className="font-bold text-sm">{user.full_name || user.email || "No name"}</p>
                     <p className="text-xs text-[var(--text-secondary)]">Role: {user.role || "member"}</p>
                   </div>
-                  <span className="text-xs text-[var(--text-secondary)]">{moment(user.created_at).fromNow()}</span>
+                  <span className="text-xs text-[var(--text-secondary)]"><RelativeTime date={user.created_at} /></span>
                 </div>
               ))}
               {users.length === 0 && (

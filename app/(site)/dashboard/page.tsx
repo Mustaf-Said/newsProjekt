@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import moment from "moment";
 import { supabase } from "@/api/supabaseClient";
@@ -16,6 +16,20 @@ const DEFAULT_LISTING_IMAGE_BY_CATEGORY: Record<string, string> = {
   land: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=200",
   other: "/contactMe.jpg"
 };
+
+function RelativeTime({ date }: { date?: string | null }) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!date || !mounted) {
+    return <>Recently</>;
+  }
+
+  return <>{moment(date).fromNow()}</>;
+}
 
 export default function Dashboard() {
   const queryClient = useQueryClient();
@@ -149,7 +163,7 @@ export default function Dashboard() {
                       <h3 className="font-bold text-sm truncate">{item.title}</h3>
                       <div className="flex items-center gap-2 mt-1">
                         <Badge className={`${statusColor} border-0 text-[10px]`}>{item.status}</Badge>
-                        <span className="text-xs text-[var(--text-secondary)]">{moment(item.created_at).fromNow()}</span>
+                        <span className="text-xs text-[var(--text-secondary)]"><RelativeTime date={item.created_at} /></span>
                       </div>
                     </div>
                     <div className="text-sm font-bold text-amber-600">{price}</div>
