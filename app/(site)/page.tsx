@@ -150,6 +150,7 @@ export default async function Home() {
   const formatLocal = (localNews || []).map((n) => ({
     title: n.headline,
     description: n.summary,
+    content: n.content,
     image: n.image_url || "https://images.unsplash.com/photo-1504711434969-e33886168d6c?w=600",
     tag: "Local",
     tagColor: "bg-amber-500",
@@ -159,6 +160,7 @@ export default async function Home() {
   const formatWorld = (worldNews || []).map((n) => ({
     title: n.title,
     description: n.description,
+    content: n.description,
     image: n.urlToImage || "https://images.unsplash.com/photo-1495020689067-958852a7765e?w=600",
     tag: "World",
     tagColor: "bg-blue-600",
@@ -168,6 +170,7 @@ export default async function Home() {
   const formatFootball = (footballNews || []).map((n) => ({
     title: n.title,
     description: n.description,
+    content: n.description,
     image: n.urlToImage || "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=600",
     tag: "Football",
     tagColor: "bg-green-600",

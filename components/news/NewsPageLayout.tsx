@@ -125,6 +125,9 @@ export default function NewsPageLayout({
   const [selectedArticle, setSelectedArticle] = useState<any>(null);
   const featured = articles?.[0] ?? null;
   const remaining = articles?.slice(1) ?? [];
+  const selectedBodyText = (selectedArticle?.content || selectedArticle?.description || "")
+    .replace(/<[^>]*>/g, "")
+    .trim();
   if (!articles?.length) {
     return <p>No articles available</p>;
   }
@@ -149,7 +152,7 @@ export default function NewsPageLayout({
               <img src={selectedArticle.image} alt={selectedArticle.title} className="w-full rounded-xl mb-6 max-h-96 object-cover" />
             )}
             <h2 className="text-2xl md:text-3xl font-black mb-4">{selectedArticle.title}</h2>
-            <p className="text-[var(--text-secondary)] leading-relaxed">{selectedArticle.description || selectedArticle.content}</p>
+            <p className="text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap">{selectedBodyText}</p>
           </div>
         </div>
       ) : (

@@ -65,6 +65,10 @@ function NewsCard({ article, index, onClick }: { article: any; index: number; on
 }
 
 function ArticleModal({ article, onClose }: { article: any; onClose: () => void }) {
+  const bodyText = (article.content || article.description || "")
+    .replace(/<[^>]*>/g, "")
+    .trim();
+
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <motion.div
@@ -87,7 +91,7 @@ function ArticleModal({ article, onClose }: { article: any; onClose: () => void 
             <img src={article.image} alt={article.title} className="w-full rounded-xl mb-6 max-h-80 object-cover" />
           )}
           <h1 className="text-2xl md:text-3xl font-black mb-4 text-[var(--text-primary)]">{article.title}</h1>
-          <p className="text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap">{article.description}</p>
+          <p className="text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap">{bodyText}</p>
           <div className="flex items-center gap-4 mt-6 text-sm text-[var(--text-secondary)]">
             <span className={`px-2 py-1 rounded-full text-white text-xs font-bold ${article.tagColor || "bg-slate-700"}`}>
               {article.tag}
