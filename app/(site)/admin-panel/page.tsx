@@ -112,8 +112,8 @@ export default function AdminPanel() {
   const { data: pendingComments = [], isLoading: loadingComments } = useQuery({
     queryKey: ["admin-pending-comments"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("comments")
+      const { data, error } = await (supabase
+        .from("comments") as any)
         .select("id, content, created_at, status, user_id, article_id, profiles(full_name, email), articles!inner(id, title, category)")
         .eq("status", "pending")
         .eq("articles.category", "local")
