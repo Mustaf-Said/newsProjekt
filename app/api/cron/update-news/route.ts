@@ -73,7 +73,7 @@ async function translateArticles(
         content_so: contentSo,
         category,
         image_url: article.imageUrl,
-        published_at: runTimestampIso,
+        published_at: article.publishedAt || runTimestampIso,
       };
     })
   );

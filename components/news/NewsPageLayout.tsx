@@ -4,6 +4,17 @@ import { Clock } from "lucide-react";
 import { motion } from "framer-motion";
 import moment from "moment";
 import { useEffect, useState } from "react";
+import { supabase } from "@/api/supabaseClient";
+
+type CommentRow = {
+  id: number;
+  content: string;
+  created_at: string | null;
+  user_id: string | null;
+  profiles?: {
+    full_name: string | null;
+  } | null;
+};
 
 function RelativeTime({ date }: { date?: string | null }) {
   const [mounted, setMounted] = useState(false);
@@ -113,6 +124,7 @@ type NewsPageLayoutProps = {
   title: string;
   tagColor: string;
   articles: any[];
+  enableComments?: boolean;
 };
 
 
@@ -120,14 +132,117 @@ export default function NewsPageLayout({
   title,
   tagColor,
   articles,
+  enableComments = false,
 }: NewsPageLayoutProps) {
 
   const [selectedArticle, setSelectedArticle] = useState<any>(null);
+  const [comments, setComments] = useState<CommentRow[]>([]);
+  const [commentText, setCommentText] = useState("");
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [commentError, setCommentError] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const featured = articles?.[0] ?? null;
   const remaining = articles?.slice(1) ?? [];
+  const selectedArticleId = selectedArticle?.id ?? null;
   const selectedBodyText = (selectedArticle?.content || selectedArticle?.description || "")
     .replace(/<[^>]*>/g, "")
     .trim();
+
+  useEffect(() => {
+    const loadComments = async () => {
+      if (!enableComments || !selectedArticleId) {
+        setComments([]);
+        return;
+      }
+
+      const { data, error } = await (supabase
+        .from("comments") as any)
+        .select("id, content, created_at, user_id, profiles(full_name)")
+        .eq("article_id", selectedArticleId)
+        .eq("status", "approved")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        setCommentError("Could not load comments.");
+        return;
+      }
+
+      setCommentError(null);
+      setComments((data || []) as CommentRow[]);
+    };
+
+    loadComments();
+  }, [enableComments, selectedArticleId]);
+
+  useEffect(() => {
+    if (!enableComments) {
+      setCurrentUserId(null);
+      return;
+    }
+
+    let isMounted = true;
+
+    const loadUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      if (isMounted) {
+        setCurrentUserId(data.user?.id || null);
+      }
+    };
+
+    loadUser();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setCurrentUserId(session?.user?.id || null);
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, [enableComments]);
+
+  const handleSubmitComment = async () => {
+    if (!enableComments || !selectedArticleId || !commentText.trim()) return;
+
+    setIsSubmittingComment(true);
+    setCommentError(null);
+
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    if (authError || !authData.user) {
+      setCommentError("Please sign in to comment.");
+      setIsSubmittingComment(false);
+      return;
+    }
+
+    const { error: insertError } = await supabase.from("comments").insert({
+      article_id: selectedArticleId,
+      content: commentText.trim(),
+      user_id: authData.user.id,
+    });
+
+    if (insertError) {
+      setCommentError(insertError.message || "Could not post comment.");
+      setIsSubmittingComment(false);
+      return;
+    }
+
+    const { data, error } = await (supabase
+      .from("comments") as any)
+      .select("id, content, created_at, user_id, profiles(full_name)")
+      .eq("article_id", selectedArticleId)
+      .eq("status", "approved")
+      .order("created_at", { ascending: false });
+
+    if (!error) {
+      setComments((data || []) as CommentRow[]);
+    }
+
+    setCommentText("");
+    setIsSubmittingComment(false);
+  };
+
   if (!articles?.length) {
     return <p>No articles available</p>;
   }
@@ -153,6 +268,55 @@ export default function NewsPageLayout({
             )}
             <h2 className="text-2xl md:text-3xl font-black mb-4">{selectedArticle.title}</h2>
             <p className="text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap">{selectedBodyText}</p>
+
+            {enableComments && selectedArticleId && (
+              <div className="mt-8 border-t border-[var(--border)] pt-6">
+                <h3 className="text-xl font-bold mb-4 text-[var(--text-primary)]">Comments</h3>
+
+                <div className="space-y-3 mb-4">
+                  {comments.length === 0 ? (
+                    <p className="text-sm text-[var(--text-secondary)]">No comments yet.</p>
+                  ) : (
+                    comments.map((comment) => (
+                      <div key={comment.id} className="rounded-lg border border-[var(--border)] p-3">
+                        <p className="text-xs font-semibold text-[var(--text-secondary)] mb-1">
+                          {comment.profiles?.full_name || (comment.user_id ? `User ${comment.user_id.slice(0, 8)}` : "Unknown User")}
+                        </p>
+                        <p className="text-sm text-[var(--text-primary)] whitespace-pre-wrap">{comment.content}</p>
+                        <p className="text-xs text-[var(--text-secondary)] mt-2">
+                          <RelativeTime date={comment.created_at} />
+                        </p>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {currentUserId ? (
+                  <>
+                    <textarea
+                      value={commentText}
+                      onChange={(event) => setCommentText(event.target.value)}
+                      className="w-full min-h-[100px] rounded-lg border border-[var(--border)] bg-[var(--bg-primary)] p-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      placeholder="Write a comment..."
+                    />
+
+                    {commentError && (
+                      <p className="text-sm text-red-500 mt-2">{commentError}</p>
+                    )}
+
+                    <button
+                      onClick={handleSubmitComment}
+                      disabled={isSubmittingComment || !commentText.trim()}
+                      className="mt-3 inline-flex items-center px-4 py-2 rounded-lg bg-amber-500 text-white font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      {isSubmittingComment ? "Posting..." : "Post Comment"}
+                    </button>
+                  </>
+                ) : (
+                  <p className="text-sm text-[var(--text-secondary)]">Please sign in to write a comment.</p>
+                )}
+              </div>
+            )}
           </div>
         </div>
       ) : (

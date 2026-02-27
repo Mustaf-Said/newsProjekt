@@ -24,9 +24,12 @@ async function getArticles() {
       .filter((row: ArticleRow) => Boolean(row.title_so || row.title))
       .map((row: ArticleRow) => ({
         title: row.title_so || row.title || "Untitled",
-        description: row.content_so || row.content || row.title_so || row.title || "",
-        image: row.image_url,
-        date: row.published_at,
+        description: (row.content_so || row.content || row.title_so || row.title || "")
+          .replace(/<[^>]+>/g, "")
+          .slice(0, 220),
+        content: row.content_so || row.content || row.title_so || row.title || "",
+        image: row.image_url || "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=600",
+        date: row.published_at || row.created_at || new Date().toISOString(),
         source: "Football News",
         tagColor: "bg-green-600",
       }));

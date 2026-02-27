@@ -41,6 +41,7 @@ export default async function LocalNews() {
       title="Local News"
       tagColor="bg-amber-500"
       articles={articles}
+      enableComments
     />
   );
 }
