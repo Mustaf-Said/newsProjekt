@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import {
   CheckCircle,
   Loader2,
+  MessageSquare,
   Shield,
   Trash2,
   Upload,
@@ -100,6 +101,22 @@ export default function AdminPanel() {
         .from("announcements")
         .select("id, title, category, listing_type, details, status, created_at, user_id")
         .eq("status", "pending")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+    initialData: []
+  });
+
+  const { data: pendingComments = [], isLoading: loadingComments } = useQuery({
+    queryKey: ["admin-pending-comments"],
+    queryFn: async () => {
+      const { data, error } = await (supabase
+        .from("comments") as any)
+        .select("id, content, created_at, status, user_id, article_id, profiles(full_name, email), articles!inner(id, title, category)")
+        .eq("status", "pending")
+        .eq("articles.category", "local")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -267,6 +284,24 @@ export default function AdminPanel() {
     queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
   };
 
+  const updateCommentStatus = async (id: number, status: "approved" | "rejected") => {
+    const { error } = await supabase.from("comments").update({ status }).eq("id", id);
+    if (error) {
+      toast.error("Failed to update comment status.");
+      return;
+    }
+    queryClient.invalidateQueries({ queryKey: ["admin-pending-comments"] });
+  };
+
+  const deleteComment = async (id: number) => {
+    const { error } = await supabase.from("comments").delete().eq("id", id);
+    if (error) {
+      toast.error("Failed to delete comment.");
+      return;
+    }
+    queryClient.invalidateQueries({ queryKey: ["admin-pending-comments"] });
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex items-center gap-3 mb-8">
@@ -300,6 +335,7 @@ export default function AdminPanel() {
           <TabsTrigger value="publish">Publish News</TabsTrigger>
           <TabsTrigger value="manage">Manage News</TabsTrigger>
           <TabsTrigger value="ads">Approve Ads</TabsTrigger>
+          <TabsTrigger value="comments">Approve Comments</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
         </TabsList>
 
@@ -422,6 +458,50 @@ export default function AdminPanel() {
                         <XCircle className="w-4 h-4 mr-1" /> Reject
                       </Button>
                       <Button size="sm" variant="ghost" onClick={() => deleteAd(item.id)} className="text-red-500">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="comments">
+          {loadingComments ? (
+            <div className="flex items-center justify-center py-10">
+              <Loader2 className="w-6 h-6 animate-spin text-[var(--text-secondary)]" />
+            </div>
+          ) : pendingComments.length === 0 ? (
+            <div className="text-center py-16 text-[var(--text-secondary)]">
+              <MessageSquare className="w-12 h-12 mx-auto opacity-30 mb-3" />
+              <p>No pending comments to review</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {pendingComments.map((item: any) => {
+                const writer = item.profiles?.full_name || item.profiles?.email || (item.user_id ? `${item.user_id.slice(0, 6)}...` : "Unknown");
+                const articleTitle = item.articles?.title || "Unknown article";
+
+                return (
+                  <div key={item.id} className="bg-[var(--bg-card)] rounded-xl border border-[var(--border)] p-4 flex items-center gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Badge className="bg-amber-100 text-amber-800 border-0 text-[10px] uppercase">local</Badge>
+                        <h3 className="font-bold text-sm truncate">{articleTitle}</h3>
+                      </div>
+                      <p className="text-xs text-[var(--text-secondary)] mb-2">by {writer} • <RelativeTime date={item.created_at} /></p>
+                      <p className="text-sm text-[var(--text-primary)] line-clamp-2">{item.content}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" className="bg-green-500 hover:bg-green-600 text-white" onClick={() => updateCommentStatus(item.id, "approved")}>
+                        <CheckCircle className="w-4 h-4 mr-1" /> Approve
+                      </Button>
+                      <Button size="sm" variant="outline" className="text-red-600" onClick={() => updateCommentStatus(item.id, "rejected")}>
+                        <XCircle className="w-4 h-4 mr-1" /> Reject
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => deleteComment(item.id)} className="text-red-500">
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
