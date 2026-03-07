@@ -59,6 +59,7 @@ export default function AdminPanel() {
   const [content, setContent] = useState("");
   const [category, setCategory] = useState("local");
   const [imageUrl, setImageUrl] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
 
   const { data: stats } = useQuery({
     queryKey: ["admin-stats"],
@@ -232,6 +233,7 @@ export default function AdminPanel() {
       title: headline.trim(),
       content: composedContent || content.trim(),
       image_url: safeImageUrl || null,
+      video_url: videoUrl.trim() || null,
       category,
       author_id: userId,
       published_at: new Date().toISOString()
@@ -249,6 +251,7 @@ export default function AdminPanel() {
     setSummary("");
     setContent("");
     setImageUrl("");
+    setVideoUrl("");
     setPublishing(false);
     queryClient.invalidateQueries({ queryKey: ["admin-news"] });
     queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
@@ -380,6 +383,10 @@ export default function AdminPanel() {
                   {imageUrl && (
                     <img src={imageUrl} alt="" className="mt-2 w-32 h-20 object-cover rounded-lg" />
                   )}
+                </div>
+                <div>
+                  <Label>YouTube Video URL (optional)</Label>
+                  <Input value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://youtube.com/watch?v=..." />
                 </div>
               </div>
               <Button onClick={publishNews} disabled={publishing} className="bg-amber-500 hover:bg-amber-600 text-white">

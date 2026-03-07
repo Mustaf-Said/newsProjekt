@@ -7,6 +7,13 @@ import { motion } from "framer-motion";
 import moment from "moment";
 import { useEffect, useState } from "react";
 
+function getYouTubeId(url: string | null | undefined) {
+  if (!url) return null;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : null;
+}
+
 function RelativeTime({ date }: { date?: string | null }) {
   const [mounted, setMounted] = useState(false);
 
@@ -89,6 +96,19 @@ function ArticleModal({ article, onClose }: { article: any; onClose: () => void 
         <div className="p-6">
           {article.image && (
             <img src={article.image} alt={article.title} className="w-full rounded-xl mb-6 max-h-80 object-cover" />
+          )}
+          {article.video_url && getYouTubeId(article.video_url) && (
+            <div className="w-full aspect-video rounded-xl overflow-hidden mb-6">
+              <iframe
+                width="100%"
+                height="100%"
+                src={`https://www.youtube.com/embed/${getYouTubeId(article.video_url)}`}
+                title={article.title}
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
           )}
           <h1 className="text-2xl md:text-3xl font-black mb-4 text-[var(--text-primary)]">{article.title}</h1>
           <p className="text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap">{bodyText}</p>

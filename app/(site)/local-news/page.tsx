@@ -9,7 +9,7 @@ const supabase = createClient(
 async function getLocalNews() {
   const { data, error } = await supabase
     .from("articles")
-    .select("id, title, content, category, published_at, created_at, image_url")
+    .select("id, title, content, category, published_at, created_at, image_url, video_url")
     .eq("category", "local")
     .order("published_at", { ascending: false })
     .limit(20);
@@ -26,6 +26,7 @@ async function getLocalNews() {
       : "",
     content: row.content,
     image: row.image_url,
+    video_url: row.video_url,
     date: row.published_at || row.created_at,
     source: "Local",
     tagColor: "bg-amber-500",

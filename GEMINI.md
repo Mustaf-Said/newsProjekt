@@ -1,34 +1,145 @@
-I am building a web application using Next.js (App Router) with TypeScript and Supabase as the backend. The website is still under development and I want to temporarily protect the entire site from public access.
+Task: Add optional YouTube video support for Local News while keeping the same UI and logic everywhere.
 
-Please implement a temporary development protection system with the following requirements:
+Context:
+The project has three news types:
 
-1. Add a middleware that protects all routes and redirects unauthenticated users to /login.
-2. Create a simple login page that uses Supabase email/password authentication.
-3. After successful login, redirect the user to the homepage.
-4. Use Supabase session cookies to determine if a user is authenticated.
-5. Add clear comments in every file related to this feature:
-   "TEMP: DEVELOPMENT SITE PROTECTION – remove before production launch".
-6. Group any development-protection related logic so it is easy to remove later.
-7. Add an environment variable called SITE_LOCK in .env.local.
+- Local News (manual articles from admin panel)
+- World News (API based)
+- Football News (API based)
 
-Behavior:
+This change must apply ONLY to Local News. Do NOT modify World News or Football News.
 
-* If SITE_LOCK=true → the middleware protects the entire site.
-* If SITE_LOCK=false → the middleware does nothing and the site is public.
+Current Local News fields:
 
-Project stack:
+- headline
+- summary
+- content
+- image
+- category = local
 
-* Next.js (App Router)
-* TypeScript
-* Supabase Auth
-* Tailwind CSS
-* Deployment on Vercel
+This already works correctly for publishing text articles.
 
-Please generate:
+Goal:
+Allow Local News to be published either as:
 
-1. middleware.ts
-2. login page
-3. Supabase client setup
-4. Example protected page
-5. .env.local example
-6. Instructions on how to disable the protection when launching the production site.
+1. a text article
+2. a video article
+
+while keeping the same UI and behavior across the entire site.
+
+---
+
+1. Admin Panel
+
+Keep the current UI exactly the same.
+
+Existing fields must remain:
+
+- Headline
+- Summary
+- Content
+- Image
+
+Add one optional field:
+
+YouTube Video URL (optional)
+
+Example input:
+https://www.youtube.com/watch?v=VIDEO_ID
+or
+https://youtu.be/VIDEO_ID
+
+Publishing logic:
+
+TEXT ARTICLE
+Uses:
+
+- headline
+- summary
+- content
+- image
+
+VIDEO ARTICLE
+Uses:
+
+- headline
+- summary
+- image
+- video_url
+
+If video_url exists:
+
+- treat the article as a video article
+- content can be empty.
+
+If video_url does not exist:
+
+- behave exactly like the current text article system.
+
+---
+
+2. Home Page / Dashboard Cards
+
+The card layout must remain exactly the same:
+
+- image
+- headline
+- summary
+
+Do NOT embed video in cards.
+
+Cards must behave exactly the same whether the article is text or video.
+
+Clicking the card must open the article exactly the same way as today.
+
+---
+
+3. Article View (Modal or Article Page)
+
+Keep the same UI and layout.
+
+Render order:
+
+Image
+
+Video (ONLY if video_url exists)
+
+Headline
+
+Summary
+
+Content (only if it exists)
+
+Comments
+
+Embed the video using YouTube iframe:
+
+https://www.youtube.com/embed/VIDEO_ID
+
+The video must play directly on the page and must NOT redirect to YouTube.
+
+---
+
+4. Article URL Page
+
+The logic must be exactly the same as the modal/article view.
+
+Video articles and text articles must use the same layout and comment system.
+
+---
+
+5. Important Constraints
+
+Do NOT modify:
+
+- World News logic
+- Football News logic
+- API fetching
+- routing
+- comment system
+- existing UI styling
+- homepage card layout
+
+Only extend Local News so it supports optional YouTube video articles.
+
+Everything else must behave exactly the same as before.

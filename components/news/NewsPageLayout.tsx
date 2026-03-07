@@ -16,6 +16,13 @@ type CommentRow = {
   } | null;
 };
 
+function getYouTubeId(url: string | null | undefined) {
+  if (!url) return null;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : null;
+}
+
 function RelativeTime({ date }: { date?: string | null }) {
   const [mounted, setMounted] = useState(false);
 
@@ -265,6 +272,19 @@ export default function NewsPageLayout({
           <div className="bg-[var(--bg-card)] rounded-2xl border border-[var(--border)] p-6 md:p-10">
             {selectedArticle.image && (
               <img src={selectedArticle.image} alt={selectedArticle.title} className="w-full rounded-xl mb-6 max-h-96 object-cover" />
+            )}
+            {selectedArticle.video_url && getYouTubeId(selectedArticle.video_url) && (
+              <div className="w-full aspect-video rounded-xl overflow-hidden mb-6">
+                <iframe
+                  width="100%"
+                  height="100%"
+                  src={`https://www.youtube.com/embed/${getYouTubeId(selectedArticle.video_url)}`}
+                  title={selectedArticle.title}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
             )}
             <h2 className="text-2xl md:text-3xl font-black mb-4">{selectedArticle.title}</h2>
             <p className="text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap">{selectedBodyText}</p>

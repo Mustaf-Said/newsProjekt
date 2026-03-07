@@ -125,6 +125,7 @@ export default async function Home() {
     summary: row.content ? row.content.replace(/<[^>]+>/g, "").slice(0, 180) : "",
     content: row.content,
     image_url: row.image_url,
+    video_url: (row as any).video_url,
     publish_date: row.published_at,
     created_date: row.created_at,
   }));
@@ -151,6 +152,7 @@ export default async function Home() {
     title: n.headline,
     description: n.summary,
     image: n.image_url || "https://images.unsplash.com/photo-1504711434969-e33886168d6c?w=600",
+    video_url: n.video_url,
     tag: "Local",
     tagColor: "bg-amber-500",
     date: n.publish_date || n.created_date,
