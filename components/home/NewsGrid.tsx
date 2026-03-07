@@ -14,6 +14,21 @@ function getYouTubeId(url: string | null | undefined) {
   return (match && match[2].length === 11) ? match[2] : null;
 }
 
+function splitContent(text: string | null | undefined) {
+  if (!text) return { summary: "", rest: "" };
+  const parts = text.split("\n\n");
+  if (parts.length > 1) {
+    return {
+      summary: parts[0].replace(/<[^>]*>/g, "").trim(),
+      rest: parts.slice(1).join("\n\n").trim(),
+    };
+  }
+  return {
+    summary: text.replace(/<[^>]*>/g, "").trim(),
+    rest: "",
+  };
+}
+
 function RelativeTime({ date }: { date?: string | null }) {
   const [mounted, setMounted] = useState(false);
 
@@ -33,6 +48,10 @@ function RelativeTime({ date }: { date?: string | null }) {
 }
 
 function NewsCard({ article, index, onClick }: { article: any; index: number; onClick: () => void }) {
+  const isVideo = !!article.video_url;
+  const youtubeId = getYouTubeId(article.video_url);
+  const { summary } = splitContent(article.content || article.description);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -42,12 +61,24 @@ function NewsCard({ article, index, onClick }: { article: any; index: number; on
       className="group bg-[var(--bg-card)] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-[var(--border)] cursor-pointer"
     >
       <div className="relative overflow-hidden aspect-[16/10]">
-        <img
-          src={article.image || "https://images.unsplash.com/photo-1504711434969-e33886168d6c?w=600"}
-          alt={article.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-        />
-        <div className="absolute top-3 left-3">
+        {isVideo && youtubeId ? (
+          <iframe
+            width="100%"
+            height="100%"
+            src={`https://www.youtube.com/embed/${youtubeId}`}
+            title={article.title}
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        ) : (
+          <img
+            src={article.image || "https://images.unsplash.com/photo-1504711434969-e33886168d6c?w=600"}
+            alt={article.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+        )}
+        <div className="absolute top-3 left-3 pointer-events-none">
           <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white rounded-full ${article.tagColor || "bg-slate-700"}`}>
             {article.tag}
           </span>
@@ -57,8 +88,8 @@ function NewsCard({ article, index, onClick }: { article: any; index: number; on
         <h3 className="font-bold text-[var(--text-primary)] line-clamp-2 mb-2 group-hover:text-amber-600 transition-colors">
           {article.title}
         </h3>
-        {article.description && (
-          <p className="text-sm text-[var(--text-secondary)] line-clamp-2 mb-3">{article.description}</p>
+        {summary && (
+          <p className="text-sm text-[var(--text-secondary)] line-clamp-2 mb-3">{summary}</p>
         )}
         <div className="flex items-center justify-between text-xs text-[var(--text-secondary)]">
           <div className="flex items-center gap-1">
@@ -72,9 +103,9 @@ function NewsCard({ article, index, onClick }: { article: any; index: number; on
 }
 
 function ArticleModal({ article, onClose }: { article: any; onClose: () => void }) {
-  const bodyText = (article.content || article.description || "")
-    .replace(/<[^>]*>/g, "")
-    .trim();
+  const { summary, rest } = splitContent(article.content || article.description);
+  const isVideo = !!article.video_url;
+  const youtubeId = getYouTubeId(article.video_url);
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -94,24 +125,35 @@ function ArticleModal({ article, onClose }: { article: any; onClose: () => void 
           </button>
         </div>
         <div className="p-6">
-          {article.image && (
-            <img src={article.image} alt={article.title} className="w-full rounded-xl mb-6 max-h-80 object-cover" />
-          )}
-          <h1 className="text-2xl md:text-3xl font-black mb-4 text-[var(--text-primary)]">{article.title}</h1>
-          <p className="text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap mb-6">{bodyText}</p>
-          
-          {article.video_url && getYouTubeId(article.video_url) && (
-            <div className="w-full aspect-video rounded-xl overflow-hidden mb-6">
-              <iframe
-                width="100%"
-                height="100%"
-                src={`https://www.youtube.com/embed/${getYouTubeId(article.video_url)}`}
-                title={article.title}
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            </div>
+          {isVideo && youtubeId ? (
+            /* VIDEO ARTICLE */
+            <>
+              <div className="w-full aspect-video rounded-xl overflow-hidden mb-6">
+                <iframe
+                  width="100%"
+                  height="100%"
+                  src={`https://www.youtube.com/embed/${youtubeId}`}
+                  title={article.title}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+              <h1 className="text-2xl md:text-3xl font-black mb-4 text-[var(--text-primary)]">{article.title}</h1>
+              <p className="text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap mb-6">{summary}</p>
+            </>
+          ) : (
+            /* TEXT ARTICLE */
+            <>
+              {article.image && (
+                <img src={article.image} alt={article.title} className="w-full rounded-xl mb-6 max-h-80 object-cover" />
+              )}
+              <h1 className="text-2xl md:text-3xl font-black mb-4 text-[var(--text-primary)]">{article.title}</h1>
+              <p className="text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap mb-2">{summary}</p>
+              {rest && (
+                <p className="text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap mb-6">{rest}</p>
+              )}
+            </>
           )}
           <div className="flex items-center gap-4 mt-6 text-sm text-[var(--text-secondary)]">
             <span className={`px-2 py-1 rounded-full text-white text-xs font-bold ${article.tagColor || "bg-slate-700"}`}>

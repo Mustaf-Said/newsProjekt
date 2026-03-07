@@ -23,6 +23,21 @@ function getYouTubeId(url: string | null | undefined) {
   return (match && match[2].length === 11) ? match[2] : null;
 }
 
+function splitContent(text: string | null | undefined) {
+  if (!text) return { summary: "", rest: "" };
+  const parts = text.split("\n\n");
+  if (parts.length > 1) {
+    return {
+      summary: parts[0].replace(/<[^>]*>/g, "").trim(),
+      rest: parts.slice(1).join("\n\n").trim(),
+    };
+  }
+  return {
+    summary: text.replace(/<[^>]*>/g, "").trim(),
+    rest: "",
+  };
+}
+
 function RelativeTime({ date }: { date?: string | null }) {
   const [mounted, setMounted] = useState(false);
 
@@ -39,23 +54,39 @@ function RelativeTime({ date }: { date?: string | null }) {
 
 function FeaturedStory({ article, onReadMore }: { article: any; onReadMore: () => void }) {
   if (!article) return null;
+  const isVideo = !!article.video_url;
+  const youtubeId = getYouTubeId(article.video_url);
+  const { summary } = splitContent(article.content || article.description);
+
   return (
     <div className="relative rounded-2xl overflow-hidden mb-10 group">
       <div className="aspect-[21/9] md:aspect-[21/8]">
-        <img
-          src={article.image || "https://images.pexels.com/photos/10131170/pexels-photo-10131170.jpeg"}
-          alt={article.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-        />
+        {isVideo && youtubeId ? (
+          <iframe
+            width="100%"
+            height="100%"
+            src={`https://www.youtube.com/embed/${youtubeId}`}
+            title={article.title}
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        ) : (
+          <img
+            src={article.image || "https://images.pexels.com/photos/10131170/pexels-photo-10131170.jpeg"}
+            alt={article.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+          />
+        )}
       </div>
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none" />
       <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10">
         <span className={`inline-block px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white rounded-full ${article.tagColor || "bg-amber-500"} mb-3`}>
           Featured
         </span>
         <h1 className="text-2xl md:text-4xl font-black text-white leading-tight mb-2">{article.title}</h1>
-        {article.description && (
-          <p className="text-white/70 text-sm md:text-base max-w-2xl line-clamp-2">{article.description}</p>
+        {summary && (
+          <p className="text-white/70 text-sm md:text-base max-w-2xl line-clamp-2">{summary}</p>
         )}
         <div className="flex items-center gap-4 mt-4 text-white/50 text-xs">
           {article.source && <span>{article.source}</span>}
@@ -74,6 +105,10 @@ function FeaturedStory({ article, onReadMore }: { article: any; onReadMore: () =
 }
 
 function ArticleCard({ article, index, onClick }: { article: any; index: number; onClick: () => void }) {
+  const isVideo = !!article.video_url;
+  const youtubeId = getYouTubeId(article.video_url);
+  const { summary } = splitContent(article.content || article.description);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -83,18 +118,30 @@ function ArticleCard({ article, index, onClick }: { article: any; index: number;
       className="group bg-[var(--bg-card)] rounded-xl overflow-hidden border border-[var(--border)] hover:shadow-lg transition-all duration-300 cursor-pointer"
     >
       <div className="relative overflow-hidden aspect-[16/10]">
-        <img
-          src={article.image || "https://images.unsplash.com/photo-1495020689067-958852a7765e?w=600"}
-          alt={article.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-        />
+        {isVideo && youtubeId ? (
+          <iframe
+            width="100%"
+            height="100%"
+            src={`https://www.youtube.com/embed/${youtubeId}`}
+            title={article.title}
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        ) : (
+          <img
+            src={article.image || "https://images.unsplash.com/photo-1495020689067-958852a7765e?w=600"}
+            alt={article.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+        )}
       </div>
       <div className="p-4">
         <h3 className="font-bold text-sm text-[var(--text-primary)] line-clamp-2 mb-2 group-hover:text-amber-600 transition-colors">
           {article.title}
         </h3>
-        {article.description && (
-          <p className="text-xs text-[var(--text-secondary)] line-clamp-2 mb-2">{article.description}</p>
+        {summary && (
+          <p className="text-xs text-[var(--text-secondary)] line-clamp-2 mb-2">{summary}</p>
         )}
         <div className="flex items-center gap-3 text-[10px] text-[var(--text-secondary)]">
           {article.source && <span>{article.source}</span>}
@@ -150,10 +197,7 @@ export default function NewsPageLayout({
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const featured = articles?.[0] ?? null;
   const remaining = articles?.slice(1) ?? [];
-  const selectedArticleId = selectedArticle?.id ?? null;
-  const selectedBodyText = (selectedArticle?.content || selectedArticle?.description || "")
-    .replace(/<[^>]*>/g, "")
-    .trim();
+  const { summary: summaryPart, rest: contentPart } = splitContent(selectedArticle?.content || selectedArticle?.description);
 
   useEffect(() => {
     const loadComments = async () => {
@@ -270,24 +314,35 @@ export default function NewsPageLayout({
             ← Back to articles
           </button>
           <div className="bg-[var(--bg-card)] rounded-2xl border border-[var(--border)] p-6 md:p-10">
-            {selectedArticle.image && (
-              <img src={selectedArticle.image} alt={selectedArticle.title} className="w-full rounded-xl mb-6 max-h-96 object-cover" />
-            )}
-            <h2 className="text-2xl md:text-3xl font-black mb-4">{selectedArticle.title}</h2>
-            <p className="text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap mb-6">{selectedBodyText}</p>
-            
-            {selectedArticle.video_url && getYouTubeId(selectedArticle.video_url) && (
-              <div className="w-full aspect-video rounded-xl overflow-hidden mb-6">
-                <iframe
-                  width="100%"
-                  height="100%"
-                  src={`https://www.youtube.com/embed/${getYouTubeId(selectedArticle.video_url)}`}
-                  title={selectedArticle.title}
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              </div>
+            {selectedArticle.video_url && getYouTubeId(selectedArticle.video_url) ? (
+              /* VIDEO ARTICLE */
+              <>
+                <div className="w-full aspect-video rounded-xl overflow-hidden mb-6">
+                  <iframe
+                    width="100%"
+                    height="100%"
+                    src={`https://www.youtube.com/embed/${getYouTubeId(selectedArticle.video_url)}`}
+                    title={selectedArticle.title}
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+                <h2 className="text-2xl md:text-3xl font-black mb-4">{selectedArticle.title}</h2>
+                <p className="text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap mb-6">{summaryPart}</p>
+              </>
+            ) : (
+              /* TEXT ARTICLE */
+              <>
+                {selectedArticle.image && (
+                  <img src={selectedArticle.image} alt={selectedArticle.title} className="w-full rounded-xl mb-6 max-h-96 object-cover" />
+                )}
+                <h2 className="text-2xl md:text-3xl font-black mb-4">{selectedArticle.title}</h2>
+                <p className="text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap mb-2">{summaryPart}</p>
+                {contentPart && (
+                  <p className="text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap mb-6">{contentPart}</p>
+                )}
+              </>
             )}
 
             {enableComments && selectedArticleId && (
