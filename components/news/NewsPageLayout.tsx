@@ -197,6 +197,7 @@ export default function NewsPageLayout({
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const featured = articles?.[0] ?? null;
   const remaining = articles?.slice(1) ?? [];
+  const selectedArticleId = selectedArticle?.id ?? null;
   const { summary: summaryPart, rest: contentPart } = splitContent(selectedArticle?.content || selectedArticle?.description);
 
   useEffect(() => {
