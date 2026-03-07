@@ -273,6 +273,9 @@ export default function NewsPageLayout({
             {selectedArticle.image && (
               <img src={selectedArticle.image} alt={selectedArticle.title} className="w-full rounded-xl mb-6 max-h-96 object-cover" />
             )}
+            <h2 className="text-2xl md:text-3xl font-black mb-4">{selectedArticle.title}</h2>
+            <p className="text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap mb-6">{selectedBodyText}</p>
+            
             {selectedArticle.video_url && getYouTubeId(selectedArticle.video_url) && (
               <div className="w-full aspect-video rounded-xl overflow-hidden mb-6">
                 <iframe
@@ -286,8 +289,6 @@ export default function NewsPageLayout({
                 />
               </div>
             )}
-            <h2 className="text-2xl md:text-3xl font-black mb-4">{selectedArticle.title}</h2>
-            <p className="text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap">{selectedBodyText}</p>
 
             {enableComments && selectedArticleId && (
               <div className="mt-8 border-t border-[var(--border)] pt-6">

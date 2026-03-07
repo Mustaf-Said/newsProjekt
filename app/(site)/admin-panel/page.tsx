@@ -217,8 +217,14 @@ export default function AdminPanel() {
   };
 
   const publishNews = async () => {
-    if (!headline.trim() || !content.trim()) {
-      toast.error("Headline and content are required.");
+    const hasHeadline = headline.trim().length > 0;
+    const hasSummary = summary.trim().length > 0;
+    const hasImage = imageUrl.trim().length > 0;
+    const hasContent = content.trim().length > 0;
+    const hasVideo = videoUrl.trim().length > 0;
+
+    if (!hasHeadline || !hasSummary || !hasImage || (!hasContent && !hasVideo)) {
+      toast.error("Headline, Summary, Image, and either Content or Video are required.");
       return;
     }
 
@@ -226,12 +232,12 @@ export default function AdminPanel() {
     const { data: authData } = await supabase.auth.getUser();
     const userId = authData.user?.id || null;
     const safeImageUrl = imageUrl.startsWith("blob:") ? "" : imageUrl.trim();
-    const summaryBlock = summary.trim() ? `<p>${summary.trim()}</p>\n\n` : "";
-    const composedContent = `${summaryBlock}${content}`.trim();
+    const summaryBlock = `<p>${summary.trim()}</p>\n\n`;
+    const composedContent = `${summaryBlock}${content.trim()}`.trim();
 
     const { error } = await supabase.from("articles").insert({
       title: headline.trim(),
-      content: composedContent || content.trim(),
+      content: composedContent,
       image_url: safeImageUrl || null,
       video_url: videoUrl.trim() || null,
       category,
@@ -350,11 +356,11 @@ export default function AdminPanel() {
                 <Input value={headline} onChange={(e) => setHeadline(e.target.value)} placeholder="Enter headline..." />
               </div>
               <div>
-                <Label>Summary</Label>
+                <Label>Summary *</Label>
                 <Input value={summary} onChange={(e) => setSummary(e.target.value)} placeholder="Short summary..." />
               </div>
               <div>
-                <Label>Content *</Label>
+                <Label>Content (Optional if Video exists)</Label>
                 <Textarea value={content} onChange={(e) => setContent(e.target.value)} rows={8} placeholder="Full article content..." />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -370,7 +376,7 @@ export default function AdminPanel() {
                   </Select>
                 </div>
                 <div>
-                  <Label>Image</Label>
+                  <Label>Image *</Label>
                   <div className="flex gap-2">
                     <Input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="Image URL or upload..." className="flex-1" />
                     <label className="cursor-pointer">

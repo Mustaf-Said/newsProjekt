@@ -97,6 +97,9 @@ function ArticleModal({ article, onClose }: { article: any; onClose: () => void 
           {article.image && (
             <img src={article.image} alt={article.title} className="w-full rounded-xl mb-6 max-h-80 object-cover" />
           )}
+          <h1 className="text-2xl md:text-3xl font-black mb-4 text-[var(--text-primary)]">{article.title}</h1>
+          <p className="text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap mb-6">{bodyText}</p>
+          
           {article.video_url && getYouTubeId(article.video_url) && (
             <div className="w-full aspect-video rounded-xl overflow-hidden mb-6">
               <iframe
@@ -110,8 +113,6 @@ function ArticleModal({ article, onClose }: { article: any; onClose: () => void 
               />
             </div>
           )}
-          <h1 className="text-2xl md:text-3xl font-black mb-4 text-[var(--text-primary)]">{article.title}</h1>
-          <p className="text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap">{bodyText}</p>
           <div className="flex items-center gap-4 mt-6 text-sm text-[var(--text-secondary)]">
             <span className={`px-2 py-1 rounded-full text-white text-xs font-bold ${article.tagColor || "bg-slate-700"}`}>
               {article.tag}
