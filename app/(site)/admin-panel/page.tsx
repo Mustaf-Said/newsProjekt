@@ -223,9 +223,21 @@ export default function AdminPanel() {
     const hasContent = content.trim().length > 0;
     const hasVideo = videoUrl.trim().length > 0;
 
-    if (!hasHeadline || !hasSummary || !hasImage || (!hasContent && !hasVideo)) {
-      toast.error("Headline, Summary, Image, and either Content or Video are required.");
-      return;
+    if (category === "local") {
+      if (!hasHeadline || !hasSummary) {
+        toast.error("Headline and Summary are required.");
+        return;
+      }
+      if (!hasVideo && (!hasImage || !hasContent)) {
+        toast.error("Image and Content are required for text articles.");
+        return;
+      }
+    } else {
+      // General validation for other categories
+      if (!hasHeadline || !hasContent) {
+        toast.error("Headline and content are required.");
+        return;
+      }
     }
 
     setPublishing(true);
@@ -360,7 +372,7 @@ export default function AdminPanel() {
                 <Input value={summary} onChange={(e) => setSummary(e.target.value)} placeholder="Short summary..." />
               </div>
               <div>
-                <Label>Content (Optional if Video exists)</Label>
+                <Label>Content (Required for text articles)</Label>
                 <Textarea value={content} onChange={(e) => setContent(e.target.value)} rows={8} placeholder="Full article content..." />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -376,7 +388,7 @@ export default function AdminPanel() {
                   </Select>
                 </div>
                 <div>
-                  <Label>Image *</Label>
+                  <Label>Image (Required for text articles)</Label>
                   <div className="flex gap-2">
                     <Input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="Image URL or upload..." className="flex-1" />
                     <label className="cursor-pointer">
